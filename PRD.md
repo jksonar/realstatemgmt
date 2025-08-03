@@ -464,10 +464,10 @@ class MaintenanceRequest(models.Model):
 
 #### Week 7-8: Property Management APIs
 **Tasks:**
-- [ ] Create Property ViewSets with DRF
-- [ ] Implement CRUD operations for properties
+- [x] Create Property ViewSets with DRF
+- [x] Implement CRUD operations for properties
 - [ ] Add property search and filtering with django-filter
-- [ ] Create property serializers with validation
+- [x] Create property serializers with validation
 - [ ] Implement property image upload with Django
 - [ ] Add property status management endpoints
 - [ ] Create bulk property import functionality
@@ -511,18 +511,18 @@ class MaintenanceRequest(models.Model):
 
 #### Week 13-14: Tenant Management System with Django
 **Tasks:**
-- [ ] Create Tenant model and ViewSets
-- [ ] Implement tenant CRUD operations with DRF
-- [ ] Create tenant profile management APIs
-- [ ] Build lease agreement management system
-- [ ] Implement tenant-property relationship tracking
-- [ ] Add tenant document upload with Django FileField
-- [ ] Create tenant communication logs model
-- [ ] Implement tenant search and filtering
-- [ ] Add tenant onboarding workflow APIs
-- [ ] Create tenant history tracking
-- [ ] Set up tenant notification system
-- [ ] Add tenant data validation and serializers
+- [x] Create Tenant model and ViewSets
+- [x] Implement tenant CRUD operations with DRF
+- [x] Create tenant profile management APIs
+- [x] Build lease agreement management system
+- [x] Implement tenant-property relationship tracking
+- [x] Add tenant document upload with Django FileField
+- [x] Create tenant communication logs model
+- [x] Implement tenant search and filtering
+- [x] Add tenant onboarding workflow APIs
+- [x] Create tenant history tracking
+- [x] Set up tenant notification system
+- [x] Add tenant data validation and serializers
 
 #### Week 15-16: Financial Tracking with Django
 **Tasks:**

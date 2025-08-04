@@ -526,11 +526,11 @@ class MaintenanceRequest(models.Model):
 
 #### Week 15-16: Financial Tracking with Django
 **Tasks:**
-- [ ] Create Payment model and ViewSets
-- [ ] Implement rent payment tracking APIs
-- [ ] Build payment status management system
-- [ ] Create financial reporting with Django aggregation
-- [ ] Add automated payment reminder system using Celery
+- [x] Create Payment model and ViewSets
+- [x] Implement rent payment tracking APIs
+- [x] Build payment status management system
+- [x] Create financial reporting with Django aggregation
+- [x] Add automated payment reminder system using Celery
 - [ ] Implement receipt generation with Django
 - [ ] Create outstanding payments tracking
 - [ ] Add revenue analytics APIs

@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-wa66t2-vwf!ua_ju!(i^r47c@x6k7vf8%(c8(5jw$t5yd#1$)m
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [ '*' ]
 
 
 # Application definition
@@ -113,5 +113,34 @@ LOGGING = {
     'root': {
         'handlers': ['console'],
         'level': 'WARNING',
+    },
+}
+
+# Email Configuration
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'  # Change to your SMTP server
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'your-email@gmail.com'  # Change to your email
+EMAIL_HOST_PASSWORD = 'your-app-password'  # Change to your app password
+DEFAULT_FROM_EMAIL = 'Real Estate Management <your-email@gmail.com>'
+
+# Celery Configuration
+CELERY_BROKER_URL = 'redis://localhost:6379/0'
+CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'UTC'
+
+# Celery Beat Configuration for scheduled tasks
+CELERY_BEAT_SCHEDULE = {
+    'send-payment-reminders': {
+        'task': 'core.tasks.send_payment_reminders',
+        'schedule': 86400.0,  # Run daily (24 hours in seconds)
+    },
+    'mark-overdue-payments': {
+        'task': 'core.tasks.mark_overdue_payments',
+        'schedule': 3600.0,  # Run hourly
     },
 }

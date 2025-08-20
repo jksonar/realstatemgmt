@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block title %}Compare Properties{% endblock %}
+
+{% block page_title %}Compare Properties{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-body">
+        {% if properties %}
+            <div class="row">
+                {% for property in properties %}
+                    <div class="col-md-4">
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="card-title">{{ property.address }}</h5>
+                            </div>
+                            <div class="card-body">
+                                <p><strong>Property ID:</strong> {{ property.property_id }}</p>
+                                <p><strong>City:</strong> {{ property.city }}</p>
+                                <p><strong>Area:</strong> {{ property.area }}</p>
+                                <p><strong>Type:</strong> {{ property.property_type }}</p>
+                                <p><strong>Size:</strong> {{ property.size_sqft }} sqft</p>
+                                <p><strong>Rent:</strong> {{ property.rent_amount }}</p>
+                                <p><strong>Deposit:</strong> {{ property.deposit_amount }}</p>
+                                <p><strong>Status:</strong> {{ property.status }}</p>
+                                <p><strong>Furnished:</strong> {{ property.furnished_type }}</p>
+                                <h6>Amenities</h6>
+                                <ul>
+                                    {% for amenity in property.amenities %}
+                                    <li>{{ amenity }}</li>
+                                    {% endfor %}
+                                </ul>
+                                {% if property.image %}
+                                    <img src="{{ property.image.url }}" alt="Property Image" class="img-fluid">
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p>No properties selected for comparison.</p>
+        {% endif %}
+        <a href="{% url 'properties:property_list' %}" class="btn btn-secondary">Back to List</a>
+    </div>
+</div>
+{% endblock %}

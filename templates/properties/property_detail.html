@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block title %}Property Details{% endblock %}
+
+{% block page_title %}Property Details{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h5 class="card-title">{{ property.address }}</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <p><strong>Property ID:</strong> {{ property.property_id }}</p>
+                <p><strong>City:</strong> {{ property.city }}</p>
+                <p><strong>Area:</strong> {{ property.area }}</p>
+                <p><strong>Type:</strong> {{ property.property_type }}</p>
+                <p><strong>Size:</strong> {{ property.size_sqft }} sqft</p>
+            </div>
+            <div class="col-md-6">
+                <p><strong>Rent:</strong> {{ property.rent_amount }}</p>
+                <p><strong>Deposit:</strong> {{ property.deposit_amount }}</p>
+                <p><strong>Status:</strong> {{ property.status }}</p>
+                <p><strong>Furnished:</strong> {{ property.furnished_type }}</p>
+            </div>
+        </div>
+        <hr>
+        <h6>Amenities</h6>
+        <ul>
+            {% for amenity in property.amenities %}
+            <li>{{ amenity }}</li>
+            {% endfor %}
+        </ul>
+        {% if property.image %}
+            <hr>
+            <h6>Image</h6>
+            <img src="{{ property.image.url }}" alt="Property Image" class="img-fluid">
+        {% endif %}
+    </div>
+    <div class="card-footer">
+        <a href="{% url 'properties:property_list' %}" class="btn btn-secondary">Back to List</a>
+        <a href="{% url 'properties:property_edit' property.pk %}" class="btn btn-warning">Edit</a>
+    </div>
+</div>
+{% endblock %}

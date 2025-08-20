@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block title %}CSV Import/Export{% endblock %}
+
+{% block page_title %}CSV Import/Export{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-body">
+        <h5>Import Properties</h5>
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label for="csv_file" class="form-label">CSV File</label>
+                <input type="file" name="csv_file" class="form-control" required>
+            </div>
+            <button type="submit" name="import" class="btn btn-primary">Import</button>
+        </form>
+        <hr>
+        <h5>Export Properties</h5>
+        <form method="post">
+            {% csrf_token %}
+            <button type="submit" name="export" class="btn btn-success">Export</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

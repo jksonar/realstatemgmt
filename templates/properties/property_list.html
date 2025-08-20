@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+
+{% block title %}Properties{% endblock %}
+
+{% block page_title %}Property List{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <a href="{% url 'properties:property_add' %}" class="btn btn-primary float-end">Add Property</a>
+        <a href="{% url 'properties:property_csv_import_export' %}" class="btn btn-secondary float-end me-2">Import/Export</a>
+    </div>
+    <div class="card-body">
+        <form method="get">
+            {{ filter.form.as_p }}
+            <button type="submit" class="btn btn-primary">Search</button>
+        </form>
+        <hr>
+        <form method="post" action="{% url 'properties:property_bulk_update' %}">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label for="id_status" class="form-label">Bulk Update Status</label>
+                <select name="status" id="id_status" class="form-select">
+                    <option value="" selected>Choose...</option>
+                    {% for value, display in filter.form.fields.status.choices %}
+                        <option value="{{ value }}">{{ display }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">Apply</button>
+            <a href="{% url 'properties:property_compare' %}" id="compare-link" class="btn btn-info">Compare</a>
+        <hr>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th><input type="checkbox" id="select-all"></th>
+                    <th>ID</th>
+                    <th>Address</th>
+                    <th>City</th>
+                    <th>Type</th>
+                    <th>Rent</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for property in properties %}
+                <tr>
+                    <td><input type="checkbox" name="properties" value="{{ property.pk }}" class="property-checkbox"></td>
+                    <td><input type="checkbox" name="compare" value="{{ property.pk }}" class="compare-checkbox"></td>
+                    <td>{{ property.property_id }}</td>
+                    <td>{{ property.address }}</td>
+                    <td>{{ property.city }}</td>
+                    <td>{{ property.property_type }}</td>
+                    <td>{{ property.rent_amount }}</td>
+                    <td>{{ property.status }}</td>
+                    <td>
+                        <a href="{% url 'properties:property_detail' property.pk %}" class="btn btn-sm btn-info">View</a>
+                        <a href="{% url 'properties:property_edit' property.pk %}" class="btn btn-sm btn-warning">Edit</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        </form>
+
+        <script>
+            document.getElementById('select-all').onclick = function() {
+                var checkboxes = document.querySelectorAll('.property-checkbox');
+                for (var checkbox of checkboxes) {
+                    checkbox.checked = this.checked;
+                }
+            }
+
+            const compareLink = document.getElementById('compare-link');
+            const compareCheckboxes = document.querySelectorAll('.compare-checkbox');
+
+            compareCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', () => {
+                    const selected = document.querySelectorAll('.compare-checkbox:checked');
+                    const ids = Array.from(selected).map(cb => cb.value);
+                    if (ids.length > 0) {
+                        compareLink.href = `{% url 'properties:property_compare' %}?ids=${ids.join(',')}`;
+                    } else {
+                        compareLink.href = `{% url 'properties:property_compare' %}`;
+                    }
+                });
+            });
+        </script>
+
+
+        {% if is_paginated %}
+            <nav aria-label="Page navigation">
+                <ul class="pagination">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a></li>
+                    {% else %}
+                        <li class="page-item disabled"><a class="page-link" href="#">Previous</a></li>
+                    {% endif %}
+
+                    {% for i in paginator.page_range %}
+                        {% if page_obj.number == i %}
+                            <li class="page-item active" aria-current="page"><a class="page-link" href="#">{{ i }}</a></li>
+                        {% else %}
+                            <li class="page-item"><a class="page-link" href="?page={{ i }}">{{ i }}</a></li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if page_obj.has_next %}
+                        <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a></li>
+                    {% else %}
+                        <li class="page-item disabled"><a class="page-link" href="#">Next</a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

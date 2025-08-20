@@ -1,0 +1,251 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if form.instance.pk %}Edit Property{% else %}New Property{% endif %} - EstateFlow{% endblock %}
+
+{% block content %}
+<div class="px-10 py-8">
+    <div class="max-w-4xl mx-auto">
+        <!-- Breadcrumb -->
+        <div class="flex flex-wrap gap-2 mb-6">
+            <a class="text-[#49739c] text-base font-medium leading-normal hover:text-[#0d80f2] transition-colors" href="{% url 'property-list' %}">Properties</a>
+            <span class="text-[#49739c] text-base font-medium leading-normal">/</span>
+            <span class="text-[#0d141c] text-base font-medium leading-normal">{% if form.instance.pk %}Edit Property{% else %}New Property{% endif %}</span>
+        </div>
+
+        <!-- Header Section -->
+        <div class="mb-8">
+            <h1 class="text-[#0d141c] text-3xl font-bold leading-tight tracking-[-0.015em] mb-2">{% if form.instance.pk %}Edit Property{% else %}Add New Property{% endif %}</h1>
+            <p class="text-[#49739c] text-base font-normal leading-normal">{% if form.instance.pk %}Update property information{% else %}Enter property details to add it to your portfolio{% endif %}</p>
+        </div>
+
+        <!-- Form Section -->
+        <div class="bg-white rounded-xl border border-[#e7edf4] shadow-sm">
+            <div class="p-8">
+                <form method="post" enctype="multipart/form-data" class="space-y-6">
+                    {% csrf_token %}
+                    
+                    <!-- Property ID -->
+                    <div class="flex flex-col">
+                        <label class="text-[#0d141c] text-base font-medium leading-normal pb-2" for="{{ form.property_id.id_for_label }}">{{ form.property_id.label }}</label>
+                        <input
+                            type="text"
+                            id="{{ form.property_id.id_for_label }}"
+                            name="{{ form.property_id.name }}"
+                            value="{{ form.property_id.value|default:'' }}"
+                            placeholder="Enter unique property ID"
+                            class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#0d141c] focus:outline-0 focus:ring-0 border border-[#cedbe8] bg-slate-50 focus:border-[#0d80f2] h-14 placeholder:text-[#49739c] p-[15px] text-base font-normal leading-normal"
+                        />
+                        {% if form.property_id.help_text %}
+                            <p class="text-[#49739c] text-sm font-normal leading-normal mt-1">{{ form.property_id.help_text }}</p>
+                        {% endif %}
+                        {% for error in form.property_id.errors %}
+                            <p class="text-red-600 text-sm font-normal leading-normal mt-1">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Address -->
+                    <div class="flex flex-col">
+                        <label class="text-[#0d141c] text-base font-medium leading-normal pb-2" for="{{ form.address.id_for_label }}">{{ form.address.label }}</label>
+                        <textarea
+                            id="{{ form.address.id_for_label }}"
+                            name="{{ form.address.name }}"
+                            placeholder="Enter property address"
+                            class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#0d141c] focus:outline-0 focus:ring-0 border border-[#cedbe8] bg-slate-50 focus:border-[#0d80f2] min-h-24 placeholder:text-[#49739c] p-[15px] text-base font-normal leading-normal"
+                        >{{ form.address.value|default:'' }}</textarea>
+                        {% if form.address.help_text %}
+                            <p class="text-[#49739c] text-sm font-normal leading-normal mt-1">{{ form.address.help_text }}</p>
+                        {% endif %}
+                        {% for error in form.address.errors %}
+                            <p class="text-red-600 text-sm font-normal leading-normal mt-1">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+
+                    <!-- City and Area -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="flex flex-col">
+                            <label class="text-[#0d141c] text-base font-medium leading-normal pb-2" for="{{ form.city.id_for_label }}">{{ form.city.label }}</label>
+                            <input
+                                type="text"
+                                id="{{ form.city.id_for_label }}"
+                                name="{{ form.city.name }}"
+                                value="{{ form.city.value|default:'' }}"
+                                placeholder="Enter city"
+                                class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#0d141c] focus:outline-0 focus:ring-0 border border-[#cedbe8] bg-slate-50 focus:border-[#0d80f2] h-14 placeholder:text-[#49739c] p-[15px] text-base font-normal leading-normal"
+                            />
+                            {% for error in form.city.errors %}
+                                <p class="text-red-600 text-sm font-normal leading-normal mt-1">{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                        <div class="flex flex-col">
+                            <label class="text-[#0d141c] text-base font-medium leading-normal pb-2" for="{{ form.area.id_for_label }}">{{ form.area.label }}</label>
+                            <input
+                                type="text"
+                                id="{{ form.area.id_for_label }}"
+                                name="{{ form.area.name }}"
+                                value="{{ form.area.value|default:'' }}"
+                                placeholder="Enter area"
+                                class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#0d141c] focus:outline-0 focus:ring-0 border border-[#cedbe8] bg-slate-50 focus:border-[#0d80f2] h-14 placeholder:text-[#49739c] p-[15px] text-base font-normal leading-normal"
+                            />
+                            {% for error in form.area.errors %}
+                                <p class="text-red-600 text-sm font-normal leading-normal mt-1">{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Property Type and Status -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="flex flex-col">
+                            <label class="text-[#0d141c] text-base font-medium leading-normal pb-2" for="{{ form.property_type.id_for_label }}">{{ form.property_type.label }}</label>
+                            <input
+                                type="text"
+                                id="{{ form.property_type.id_for_label }}"
+                                name="{{ form.property_type.name }}"
+                                value="{{ form.property_type.value|default:'' }}"
+                                placeholder="e.g., 1BHK, 2BHK, 3BHK"
+                                class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#0d141c] focus:outline-0 focus:ring-0 border border-[#cedbe8] bg-slate-50 focus:border-[#0d80f2] h-14 placeholder:text-[#49739c] p-[15px] text-base font-normal leading-normal"
+                            />
+                            {% for error in form.property_type.errors %}
+                                <p class="text-red-600 text-sm font-normal leading-normal mt-1">{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                        <div class="flex flex-col">
+                            <label class="text-[#0d141c] text-base font-medium leading-normal pb-2" for="{{ form.status.id_for_label }}">{{ form.status.label }}</label>
+                            <select
+                                id="{{ form.status.id_for_label }}"
+                                name="{{ form.status.name }}"
+                                class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#0d141c] focus:outline-0 focus:ring-0 border border-[#cedbe8] bg-slate-50 focus:border-[#0d80f2] h-14 placeholder:text-[#49739c] p-[15px] text-base font-normal leading-normal"
+                            >
+                                <option value="">Select status</option>
+                                <option value="available" {% if form.status.value == 'available' %}selected{% endif %}>Available</option>
+                                <option value="occupied" {% if form.status.value == 'occupied' %}selected{% endif %}>Occupied</option>
+                                <option value="maintenance" {% if form.status.value == 'maintenance' %}selected{% endif %}>Maintenance</option>
+                            </select>
+                            {% for error in form.status.errors %}
+                                <p class="text-red-600 text-sm font-normal leading-normal mt-1">{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Size and Furnished Type -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="flex flex-col">
+                            <label class="text-[#0d141c] text-base font-medium leading-normal pb-2" for="{{ form.size_sqft.id_for_label }}">{{ form.size_sqft.label }}</label>
+                            <input
+                                type="number"
+                                id="{{ form.size_sqft.id_for_label }}"
+                                name="{{ form.size_sqft.name }}"
+                                value="{{ form.size_sqft.value|default:'' }}"
+                                placeholder="Enter square footage"
+                                class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#0d141c] focus:outline-0 focus:ring-0 border border-[#cedbe8] bg-slate-50 focus:border-[#0d80f2] h-14 placeholder:text-[#49739c] p-[15px] text-base font-normal leading-normal"
+                            />
+                            {% for error in form.size_sqft.errors %}
+                                <p class="text-red-600 text-sm font-normal leading-normal mt-1">{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                        <div class="flex flex-col">
+                            <label class="text-[#0d141c] text-base font-medium leading-normal pb-2" for="{{ form.furnished_type.id_for_label }}">{{ form.furnished_type.label }}</label>
+                            <input
+                                type="text"
+                                id="{{ form.furnished_type.id_for_label }}"
+                                name="{{ form.furnished_type.name }}"
+                                value="{{ form.furnished_type.value|default:'' }}"
+                                placeholder="e.g., Fully Furnished, Semi Furnished, Unfurnished"
+                                class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#0d141c] focus:outline-0 focus:ring-0 border border-[#cedbe8] bg-slate-50 focus:border-[#0d80f2] h-14 placeholder:text-[#49739c] p-[15px] text-base font-normal leading-normal"
+                            />
+                            {% for error in form.furnished_type.errors %}
+                                <p class="text-red-600 text-sm font-normal leading-normal mt-1">{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Rent Amount and Deposit -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="flex flex-col">
+                            <label class="text-[#0d141c] text-base font-medium leading-normal pb-2" for="{{ form.rent_amount.id_for_label }}">{{ form.rent_amount.label }}</label>
+                            <input
+                                type="number"
+                                step="0.01"
+                                id="{{ form.rent_amount.id_for_label }}"
+                                name="{{ form.rent_amount.name }}"
+                                value="{{ form.rent_amount.value|default:'' }}"
+                                placeholder="Enter monthly rent amount"
+                                class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#0d141c] focus:outline-0 focus:ring-0 border border-[#cedbe8] bg-slate-50 focus:border-[#0d80f2] h-14 placeholder:text-[#49739c] p-[15px] text-base font-normal leading-normal"
+                            />
+                            {% for error in form.rent_amount.errors %}
+                                <p class="text-red-600 text-sm font-normal leading-normal mt-1">{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                        <div class="flex flex-col">
+                            <label class="text-[#0d141c] text-base font-medium leading-normal pb-2" for="{{ form.deposit_amount.id_for_label }}">{{ form.deposit_amount.label }}</label>
+                            <input
+                                type="number"
+                                step="0.01"
+                                id="{{ form.deposit_amount.id_for_label }}"
+                                name="{{ form.deposit_amount.name }}"
+                                value="{{ form.deposit_amount.value|default:'' }}"
+                                placeholder="Enter security deposit amount"
+                                class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#0d141c] focus:outline-0 focus:ring-0 border border-[#cedbe8] bg-slate-50 focus:border-[#0d80f2] h-14 placeholder:text-[#49739c] p-[15px] text-base font-normal leading-normal"
+                            />
+                            {% for error in form.deposit_amount.errors %}
+                                <p class="text-red-600 text-sm font-normal leading-normal mt-1">{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Image Upload -->
+                    {% if form.image %}
+                    <div class="flex flex-col">
+                        <label class="text-[#0d141c] text-base font-medium leading-normal pb-2" for="{{ form.image.id_for_label }}">{{ form.image.label }}</label>
+                        <input
+                            type="file"
+                            id="{{ form.image.id_for_label }}"
+                            name="{{ form.image.name }}"
+                            accept="image/*"
+                            class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#0d141c] focus:outline-0 focus:ring-0 border border-[#cedbe8] bg-slate-50 focus:border-[#0d80f2] h-14 placeholder:text-[#49739c] p-[15px] text-base font-normal leading-normal"
+                        />
+                        {% if form.image.help_text %}
+                            <p class="text-[#49739c] text-sm font-normal leading-normal mt-1">{{ form.image.help_text }}</p>
+                        {% endif %}
+                        {% for error in form.image.errors %}
+                            <p class="text-red-600 text-sm font-normal leading-normal mt-1">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <!-- Amenities -->
+                    {% if form.amenities %}
+                    <div class="flex flex-col">
+                        <label class="text-[#0d141c] text-base font-medium leading-normal pb-2" for="{{ form.amenities.id_for_label }}">{{ form.amenities.label }}</label>
+                        <textarea
+                            id="{{ form.amenities.id_for_label }}"
+                            name="{{ form.amenities.name }}"
+                            placeholder="Enter amenities (comma-separated)"
+                            class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#0d141c] focus:outline-0 focus:ring-0 border border-[#cedbe8] bg-slate-50 focus:border-[#0d80f2] min-h-24 placeholder:text-[#49739c] p-[15px] text-base font-normal leading-normal"
+                        >{{ form.amenities.value|default:'' }}</textarea>
+                        {% if form.amenities.help_text %}
+                            <p class="text-[#49739c] text-sm font-normal leading-normal mt-1">{{ form.amenities.help_text }}</p>
+                        {% endif %}
+                        {% for error in form.amenities.errors %}
+                            <p class="text-red-600 text-sm font-normal leading-normal mt-1">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <!-- Action Buttons -->
+                    <div class="flex justify-end gap-4 pt-6 border-t border-[#e7edf4]">
+                        <a href="{% url 'property-list' %}" class="flex min-w-[120px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-6 bg-[#e7edf4] text-[#0d141c] text-sm font-bold leading-normal tracking-[0.015em] hover:bg-[#cedbe8] transition-colors">
+                            Cancel
+                        </a>
+                        <button type="submit" class="flex min-w-[120px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-6 bg-[#0d80f2] text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-[#0b6fd1] transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16px" height="16px" fill="currentColor" viewBox="0 0 256 256" class="mr-2">
+                                <path d="M229.66,218.34l-50.07-50.06a88.11,88.11,0,1,0-11.31,11.31l50.06,50.07a8,8,0,0,0,11.32-11.32ZM40,112a72,72,0,1,1,72,72A72.08,72.08,0,0,1,40,112Z"></path>
+                            </svg>
+                            {% if form.instance.pk %}Update Property{% else %}Save Property{% endif %}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

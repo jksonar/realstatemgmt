@@ -1,20 +1,30 @@
 from rest_framework import generics, status, viewsets
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.views import APIView
 from rest_framework.decorators import action
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.utils import timezone
 from datetime import datetime
 from django.db.models import Sum, Count, Avg, Q
 from django.db.models.functions import TruncMonth, TruncYear
+from django.http import HttpResponse
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import letter
+from reportlab.lib.units import inch
 from .tasks import send_individual_payment_reminder, send_bulk_payment_reminders
 from .models import (
     CustomUser, Property, Tenant, Lease, Payment, MaintenanceRequest
 )
-from .serializers import (
-    UserSerializer, PropertySerializer, TenantSerializer, LeaseSerializer,
-    PaymentSerializer, MaintenanceRequestSerializer
-)
+from .serializers import UserSerializer, PropertySerializer, TenantSerializer, LeaseSerializer, PaymentSerializer, MaintenanceRequestSerializer
+from .forms import BulkUpdatePropertiesForm, PropertyForm
+from django.shortcuts import render, redirect
+from django.views import View
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views import generic as django_generic
+from django.urls import reverse_lazy
+from .filters import PropertyFilter
 
 class RegisterView(generics.CreateAPIView):
     queryset = CustomUser.objects.all()
@@ -37,6 +47,21 @@ class LoginView(generics.GenericAPIView):
 
         return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
 
+
+class LogoutView(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def post(self, request):
+        try:
+            refresh_token = request.data["refresh"]
+            token = RefreshToken(refresh_token)
+            token.blacklist()
+
+            return Response(status=status.HTTP_205_RESET_CONTENT)
+        except Exception as e:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+
 class UserProfileView(generics.RetrieveUpdateAPIView):
     serializer_class = UserSerializer
     permission_classes = [IsAuthenticated]
@@ -44,9 +69,14 @@ class UserProfileView(generics.RetrieveUpdateAPIView):
     def get_object(self):
         return self.request.user
 
+from .permissions import IsOwnerOrReadOnly
+
 class PropertyViewSet(viewsets.ModelViewSet):
     queryset = Property.objects.all()
     serializer_class = PropertySerializer
+    permission_classes = [IsAuthenticated, IsOwnerOrReadOnly]
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['city', 'area', 'property_type', 'status', 'furnished_type']
 
 class TenantViewSet(viewsets.ModelViewSet):
     queryset = Tenant.objects.all()
@@ -171,13 +201,87 @@ class PaymentViewSet(viewsets.ModelViewSet):
             'payments': serializer.data
         })
 
+    @action(detail=True, methods=['get'])
+    def generate_receipt(self, request, pk=None):
+        """Generate a PDF receipt for a payment."""
+        payment = self.get_object()
+
+        if payment.status != 'paid':
+            return Response({'error': 'Receipt can only be generated for paid payments.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        response = HttpResponse(content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="receipt_{payment.id}.pdf"'
+
+        p = canvas.Canvas(response, pagesize=letter)
+        width, height = letter
+
+        p.setFont("Helvetica-Bold", 16)
+        p.drawString(inch, height - inch, "Payment Receipt")
+
+        p.setFont("Helvetica", 12)
+        text = p.beginText(inch, height - 1.5 * inch)
+        text.textLine(f"Receipt ID: {payment.id}")
+        text.textLine(f"Payment Date: {payment.payment_date}")
+        text.textLine(f"Amount Paid: ${payment.amount:.2f}")
+        text.textLine(f"Payment Method: {payment.payment_method}")
+        text.textLine("Status: Paid")
+
+        if payment.lease:
+            text.textLine(f"Property: {payment.lease.property.address}")
+            text.textLine(f"Tenant: {payment.lease.tenant.user.get_full_name()}")
+
+        p.drawText(text)
+
+        p.showPage()
+        p.save()
+
+        return response
+
 class MaintenanceRequestViewSet(viewsets.ModelViewSet):
     queryset = MaintenanceRequest.objects.all()
     serializer_class = MaintenanceRequestSerializer
+    permission_classes = [IsAuthenticated]
 
+class AutocompleteView(APIView):
+    permission_classes = [AllowAny]
 
-class FinancialReportingView(generics.GenericAPIView):
-    """Financial reporting with Django aggregation"""
+    def get(self, request, *args, **kwargs):
+        query = request.query_params.get('query', '')
+        if not query:
+            return Response([])
+
+        # Example for property address
+        properties = Property.objects.filter(address__icontains=query).values_list('address', flat=True)
+        
+        # Example for city
+        cities = Property.objects.filter(city__icontains=query).values_list('city', flat=True).distinct()
+
+        suggestions = list(properties) + list(cities)
+        return Response(suggestions)
+
+class BulkUpdatePropertiesView(LoginRequiredMixin, View):
+    def get(self, request, *args, **kwargs):
+        form = BulkUpdatePropertiesForm()
+        return render(request, 'bulk_update_properties.html', {'form': form})
+
+    def post(self, request, *args, **kwargs):
+        form = BulkUpdatePropertiesForm(request.POST)
+        if form.is_valid():
+            properties = form.cleaned_data['properties']
+            status = form.cleaned_data.get('status')
+            update_fields = {}
+            if status:
+                update_fields['status'] = status
+
+            if update_fields:
+                properties.update(**update_fields)
+
+            return redirect('bulk-update-properties')
+
+        return render(request, 'bulk_update_properties.html', {'form': form})
+
+class FinancialReportingViewSet(viewsets.ViewSet):
+    permission_classes = [IsAuthenticated]
     
     @action(detail=False, methods=['get'])
     def revenue_summary(self, request):
@@ -282,3 +386,47 @@ class FinancialReportingView(generics.GenericAPIView):
             'monthly_revenue': monthly_revenue,
             'payment_status_counts': status_counts
         })
+
+class PropertyListView(django_generic.ListView):
+    model = Property
+    template_name = 'property_list.html'
+    context_object_name = 'properties'
+    paginate_by = 10
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        self.filter = PropertyFilter(self.request.GET, queryset=queryset)
+        return self.filter.qs
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['filter'] = self.filter
+        return context
+
+class PropertyDetailView(django_generic.DetailView):
+    model = Property
+    template_name = 'property_detail.html'
+    context_object_name = 'property'
+
+class PropertyCreateView(django_generic.CreateView):
+    model = Property
+    form_class = PropertyForm
+    template_name = 'property_form.html'
+    success_url = reverse_lazy('property-list')
+
+class PropertyUpdateView(django_generic.UpdateView):
+    model = Property
+    form_class = PropertyForm
+    template_name = 'property_form.html'
+    success_url = reverse_lazy('property-list')
+
+class SearchInterfaceView(LoginRequiredMixin, django_generic.TemplateView):
+    """
+    View for the advanced search interface with history and suggestions.
+    """
+    template_name = 'search/search_interface.html'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['page_title'] = 'Property Search'
+        return context

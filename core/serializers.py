@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import CustomUser, Property, Tenant, Lease, Payment, MaintenanceRequest
+from .models import CustomUser, Property, Tenant, Lease, Payment, MaintenanceRequest, SavedSearch, FavoriteProperty, SearchHistory
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -34,4 +34,19 @@ class PaymentSerializer(serializers.ModelSerializer):
 class MaintenanceRequestSerializer(serializers.ModelSerializer):
     class Meta:
         model = MaintenanceRequest
+        fields = '__all__'
+
+class SavedSearchSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SavedSearch
+        fields = '__all__'
+
+class FavoritePropertySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FavoriteProperty
+        fields = '__all__'
+
+class SearchHistorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SearchHistory
         fields = '__all__'

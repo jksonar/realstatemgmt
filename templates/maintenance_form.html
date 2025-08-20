@@ -1,0 +1,415 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+    {% if maintenance_request.pk %}
+        Edit Maintenance Request - {{ maintenance_request.request_id }}
+    {% else %}
+        Add New Maintenance Request
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'maintenance_list' %}">Maintenance Requests</a></li>
+            {% if maintenance_request.pk %}
+                <li class="breadcrumb-item"><a href="{% url 'maintenance_detail' maintenance_request.id %}">{{ maintenance_request.request_id }}</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Edit</li>
+            {% else %}
+                <li class="breadcrumb-item active" aria-current="page">Add New</li>
+            {% endif %}
+        </ol>
+    </nav>
+
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0">
+            {% if maintenance_request.pk %}
+                Edit Maintenance Request
+            {% else %}
+                Add New Maintenance Request
+            {% endif %}
+        </h1>
+    </div>
+
+    <form method="post" id="maintenanceForm">
+        {% csrf_token %}
+        <div class="row">
+            <!-- Main Form -->
+            <div class="col-lg-8">
+                <!-- Basic Information -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-info-circle me-2"></i>Basic Information
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="request_id" class="form-label">Request ID</label>
+                                    <input type="text" class="form-control" id="request_id" name="request_id" 
+                                           value="{{ maintenance_request.request_id|default:'' }}" 
+                                           {% if maintenance_request.pk %}readonly{% endif %} required>
+                                    <div class="form-text">
+                                        {% if not maintenance_request.pk %}
+                                            Auto-generated if left empty
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="status" class="form-label">Status</label>
+                                    <select class="form-select" id="status" name="status" required>
+                                        <option value="reported" {% if maintenance_request.status == 'reported' %}selected{% endif %}>Reported</option>
+                                        <option value="in_progress" {% if maintenance_request.status == 'in_progress' %}selected{% endif %}>In Progress</option>
+                                        <option value="completed" {% if maintenance_request.status == 'completed' %}selected{% endif %}>Completed</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Property and Tenant -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-building me-2"></i>Property & Tenant
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="property" class="form-label">Property *</label>
+                                    <select class="form-select" id="property" name="property" required>
+                                        <option value="">Select Property</option>
+                                        {% for property in properties %}
+                                        <option value="{{ property.id }}" 
+                                                {% if maintenance_request.property.id == property.id %}selected{% endif %}
+                                                data-address="{{ property.address }}"
+                                                data-type="{{ property.property_type }}">
+                                            {{ property.property_id }} - {{ property.address|truncatechars:50 }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="tenant" class="form-label">Tenant</label>
+                                    <select class="form-select" id="tenant" name="tenant">
+                                        <option value="">Select Tenant (Optional)</option>
+                                        {% for tenant in tenants %}
+                                        <option value="{{ tenant.id }}" 
+                                                {% if maintenance_request.tenant.id == tenant.id %}selected{% endif %}
+                                                data-property="{{ tenant.current_property_id }}">
+                                            {{ tenant.first_name }} {{ tenant.last_name }} - {{ tenant.phone }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                    <div class="form-text">Leave empty if reported by property manager</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Issue Details -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-tools me-2"></i>Issue Details
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="issue_type" class="form-label">Issue Type *</label>
+                                    <select class="form-select" id="issue_type" name="issue_type" required>
+                                        <option value="">Select Issue Type</option>
+                                        <option value="plumbing" {% if maintenance_request.issue_type == 'plumbing' %}selected{% endif %}>Plumbing</option>
+                                        <option value="electrical" {% if maintenance_request.issue_type == 'electrical' %}selected{% endif %}>Electrical</option>
+                                        <option value="hvac" {% if maintenance_request.issue_type == 'hvac' %}selected{% endif %}>HVAC</option>
+                                        <option value="appliance" {% if maintenance_request.issue_type == 'appliance' %}selected{% endif %}>Appliance</option>
+                                        <option value="structural" {% if maintenance_request.issue_type == 'structural' %}selected{% endif %}>Structural</option>
+                                        <option value="pest_control" {% if maintenance_request.issue_type == 'pest_control' %}selected{% endif %}>Pest Control</option>
+                                        <option value="cleaning" {% if maintenance_request.issue_type == 'cleaning' %}selected{% endif %}>Cleaning</option>
+                                        <option value="security" {% if maintenance_request.issue_type == 'security' %}selected{% endif %}>Security</option>
+                                        <option value="other" {% if maintenance_request.issue_type == 'other' %}selected{% endif %}>Other</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="priority" class="form-label">Priority *</label>
+                                    <select class="form-select" id="priority" name="priority" required>
+                                        <option value="">Select Priority</option>
+                                        <option value="low" {% if maintenance_request.priority == 'low' %}selected{% endif %}>Low</option>
+                                        <option value="medium" {% if maintenance_request.priority == 'medium' %}selected{% endif %}>Medium</option>
+                                        <option value="high" {% if maintenance_request.priority == 'high' %}selected{% endif %}>High</option>
+                                        <option value="urgent" {% if maintenance_request.priority == 'urgent' %}selected{% endif %}>Urgent</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="mb-3">
+                                    <label for="description" class="form-label">Description *</label>
+                                    <textarea class="form-control" id="description" name="description" rows="4" 
+                                              placeholder="Describe the maintenance issue in detail..." required>{{ maintenance_request.description|default:'' }}</textarea>
+                                    <div class="form-text">Provide as much detail as possible to help technicians understand the issue</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Assignment and Cost -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-user-cog me-2"></i>Assignment & Cost
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="assigned_to" class="form-label">Assigned To</label>
+                                    <input type="text" class="form-control" id="assigned_to" name="assigned_to" 
+                                           value="{{ maintenance_request.assigned_to|default:'' }}" 
+                                           placeholder="Technician or vendor name">
+                                    <div class="form-text">Leave empty if not yet assigned</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="cost" class="form-label">Estimated Cost</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">$</span>
+                                        <input type="number" class="form-control" id="cost" name="cost" 
+                                               value="{{ maintenance_request.cost|default:'' }}" 
+                                               step="0.01" min="0" placeholder="0.00">
+                                    </div>
+                                    <div class="form-text">Leave empty if cost is not yet determined</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dates -->
+                {% if maintenance_request.pk %}
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-calendar me-2"></i>Dates
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="reported_date" class="form-label">Reported Date</label>
+                                    <input type="datetime-local" class="form-control" id="reported_date" 
+                                           value="{{ maintenance_request.reported_date|date:'Y-m-d\TH:i' }}" readonly>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="completed_date" class="form-label">Completed Date</label>
+                                    <input type="datetime-local" class="form-control" id="completed_date" name="completed_date"
+                                           value="{% if maintenance_request.completed_date %}{{ maintenance_request.completed_date|date:'Y-m-d\TH:i' }}{% endif %}">
+                                    <div class="form-text">Set automatically when status is changed to completed</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Sidebar -->
+            <div class="col-lg-4">
+                <!-- Actions -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-bolt me-2"></i>Actions
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>
+                                {% if maintenance_request.pk %}Update Request{% else %}Create Request{% endif %}
+                            </button>
+                            <a href="{% if maintenance_request.pk %}{% url 'maintenance_detail' maintenance_request.id %}{% else %}{% url 'maintenance_list' %}{% endif %}" 
+                               class="btn btn-secondary">
+                                <i class="fas fa-times me-2"></i>Cancel
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Priority Guide -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-info-circle me-2"></i>Priority Guide
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-2">
+                            <span class="badge bg-danger me-2">Urgent</span>
+                            <small>Safety hazards, no heat/AC, major leaks</small>
+                        </div>
+                        <div class="mb-2">
+                            <span class="badge bg-warning me-2">High</span>
+                            <small>Appliance failures, minor leaks, electrical issues</small>
+                        </div>
+                        <div class="mb-2">
+                            <span class="badge bg-info me-2">Medium</span>
+                            <small>Cosmetic repairs, non-essential items</small>
+                        </div>
+                        <div class="mb-2">
+                            <span class="badge bg-light text-dark me-2">Low</span>
+                            <small>Routine maintenance, minor cosmetic issues</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Issue Type Guide -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-wrench me-2"></i>Common Issues
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-2">
+                            <strong>Plumbing:</strong> <small>Leaks, clogs, water pressure</small>
+                        </div>
+                        <div class="mb-2">
+                            <strong>Electrical:</strong> <small>Outlets, lighting, circuit breakers</small>
+                        </div>
+                        <div class="mb-2">
+                            <strong>HVAC:</strong> <small>Heating, cooling, ventilation</small>
+                        </div>
+                        <div class="mb-2">
+                            <strong>Appliance:</strong> <small>Refrigerator, washer, dryer</small>
+                        </div>
+                        <div class="mb-2">
+                            <strong>Structural:</strong> <small>Walls, floors, doors, windows</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const statusSelect = document.getElementById('status');
+    const completedDateInput = document.getElementById('completed_date');
+    const propertySelect = document.getElementById('property');
+    const tenantSelect = document.getElementById('tenant');
+    
+    // Auto-set completed date when status changes to completed
+    if (statusSelect && completedDateInput) {
+        statusSelect.addEventListener('change', function() {
+            if (this.value === 'completed' && !completedDateInput.value) {
+                const now = new Date();
+                const localDateTime = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
+                completedDateInput.value = localDateTime.toISOString().slice(0, 16);
+            } else if (this.value !== 'completed') {
+                completedDateInput.value = '';
+            }
+        });
+    }
+    
+    // Filter tenants based on selected property
+    if (propertySelect && tenantSelect) {
+        propertySelect.addEventListener('change', function() {
+            const selectedPropertyId = this.value;
+            const tenantOptions = tenantSelect.querySelectorAll('option');
+            
+            tenantOptions.forEach(function(option) {
+                if (option.value === '') {
+                    option.style.display = 'block';
+                    return;
+                }
+                
+                const tenantPropertyId = option.dataset.property;
+                if (!selectedPropertyId || tenantPropertyId === selectedPropertyId) {
+                    option.style.display = 'block';
+                } else {
+                    option.style.display = 'none';
+                }
+            });
+            
+            // Reset tenant selection if current selection is not valid for new property
+            const currentTenant = tenantSelect.value;
+            if (currentTenant) {
+                const currentOption = tenantSelect.querySelector(`option[value="${currentTenant}"]`);
+                if (currentOption && currentOption.style.display === 'none') {
+                    tenantSelect.value = '';
+                }
+            }
+        });
+    }
+    
+    // Form validation
+    document.getElementById('maintenanceForm').addEventListener('submit', function(e) {
+        const requiredFields = ['property', 'issue_type', 'priority', 'description'];
+        let isValid = true;
+        
+        requiredFields.forEach(function(fieldName) {
+            const field = document.getElementById(fieldName);
+            if (!field.value.trim()) {
+                field.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                field.classList.remove('is-invalid');
+            }
+        });
+        
+        // Validate cost if provided
+        const costField = document.getElementById('cost');
+        if (costField.value && (isNaN(costField.value) || parseFloat(costField.value) < 0)) {
+            costField.classList.add('is-invalid');
+            isValid = false;
+        } else {
+            costField.classList.remove('is-invalid');
+        }
+        
+        if (!isValid) {
+            e.preventDefault();
+            alert('Please fill in all required fields correctly.');
+        }
+    });
+    
+    // Auto-generate request ID if creating new request
+    {% if not maintenance_request.pk %}
+    if (!document.getElementById('request_id').value) {
+        const now = new Date();
+        const requestId = 'MR' + now.getFullYear() + 
+                         String(now.getMonth() + 1).padStart(2, '0') + 
+                         String(now.getDate()).padStart(2, '0') + 
+                         String(now.getHours()).padStart(2, '0') + 
+                         String(now.getMinutes()).padStart(2, '0');
+        document.getElementById('request_id').value = requestId;
+    }
+    {% endif %}
+});
+</script>
+{% endblock %}

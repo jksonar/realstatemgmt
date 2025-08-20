@@ -1,0 +1,347 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Maintenance Requests - Real Estate Management{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Maintenance Requests</li>
+        </ol>
+    </nav>
+
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0">Maintenance Requests</h1>
+        <a href="{% url 'maintenance_create' %}" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i>Add Request
+        </a>
+    </div>
+
+    <!-- Search and Filters -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="input-group">
+                        <span class="input-group-text">
+                            <i class="fas fa-search"></i>
+                        </span>
+                        <input type="text" class="form-control" placeholder="Search by request ID, property, or description..." id="searchInput">
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="btn-group" role="group" aria-label="Status filters">
+                        <input type="radio" class="btn-check" name="statusFilter" id="all" value="all" checked>
+                        <label class="btn btn-outline-primary" for="all">All</label>
+
+                        <input type="radio" class="btn-check" name="statusFilter" id="reported" value="reported">
+                        <label class="btn btn-outline-warning" for="reported">Reported</label>
+
+                        <input type="radio" class="btn-check" name="statusFilter" id="in_progress" value="in_progress">
+                        <label class="btn btn-outline-info" for="in_progress">In Progress</label>
+
+                        <input type="radio" class="btn-check" name="statusFilter" id="completed" value="completed">
+                        <label class="btn btn-outline-success" for="completed">Completed</label>
+                    </div>
+                </div>
+            </div>
+            <div class="row mt-3">
+                <div class="col-md-3">
+                    <select class="form-select" id="priorityFilter">
+                        <option value="">All Priorities</option>
+                        <option value="urgent">Urgent</option>
+                        <option value="high">High</option>
+                        <option value="medium">Medium</option>
+                        <option value="low">Low</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <select class="form-select" id="issueTypeFilter">
+                        <option value="">All Issue Types</option>
+                        <option value="plumbing">Plumbing</option>
+                        <option value="electrical">Electrical</option>
+                        <option value="hvac">HVAC</option>
+                        <option value="appliance">Appliance</option>
+                        <option value="structural">Structural</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <input type="date" class="form-control" id="dateFromFilter" placeholder="From Date">
+                </div>
+                <div class="col-md-3">
+                    <input type="date" class="form-control" id="dateToFilter" placeholder="To Date">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Maintenance Requests Table -->
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Request ID</th>
+                            <th>Property</th>
+                            <th>Tenant</th>
+                            <th>Issue Type</th>
+                            <th>Priority</th>
+                            <th>Status</th>
+                            <th>Reported Date</th>
+                            <th>Assigned To</th>
+                            <th>Cost</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="maintenanceTableBody">
+                        {% for request in maintenance_requests %}
+                        <tr>
+                            <td>
+                                <a href="{% url 'maintenance_detail' request.id %}" class="text-decoration-none">
+                                    {{ request.request_id }}
+                                </a>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div>
+                                        <div class="fw-medium">{{ request.property.property_id }}</div>
+                                        <small class="text-muted">{{ request.property.address|truncatechars:30 }}</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                {% if request.tenant %}
+                                    <div>
+                                        <div class="fw-medium">{{ request.tenant.first_name }} {{ request.tenant.last_name }}</div>
+                                        <small class="text-muted">{{ request.tenant.phone }}</small>
+                                    </div>
+                                {% else %}
+                                    <span class="text-muted">No tenant</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="badge bg-secondary">{{ request.issue_type|title }}</span>
+                            </td>
+                            <td>
+                                {% if request.priority == 'urgent' %}
+                                    <span class="badge bg-danger">Urgent</span>
+                                {% elif request.priority == 'high' %}
+                                    <span class="badge bg-warning">High</span>
+                                {% elif request.priority == 'medium' %}
+                                    <span class="badge bg-info">Medium</span>
+                                {% else %}
+                                    <span class="badge bg-light text-dark">Low</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if request.status == 'reported' %}
+                                    <span class="badge bg-warning">Reported</span>
+                                {% elif request.status == 'in_progress' %}
+                                    <span class="badge bg-info">In Progress</span>
+                                {% elif request.status == 'completed' %}
+                                    <span class="badge bg-success">Completed</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ request.reported_date|date:"M d, Y" }}</td>
+                            <td>
+                                {% if request.assigned_to %}
+                                    {{ request.assigned_to }}
+                                {% else %}
+                                    <span class="text-muted">Unassigned</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if request.cost %}
+                                    ${{ request.cost|floatformat:2 }}
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="dropdown">
+                                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                        Actions
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" href="{% url 'maintenance_detail' request.id %}">
+                                            <i class="fas fa-eye me-2"></i>View Details
+                                        </a></li>
+                                        <li><a class="dropdown-item" href="{% url 'maintenance_edit' request.id %}">
+                                            <i class="fas fa-edit me-2"></i>Edit
+                                        </a></li>
+                                        {% if request.status != 'completed' %}
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><a class="dropdown-item" href="#" onclick="updateStatus('{{ request.id }}', 'in_progress')">
+                                            <i class="fas fa-play me-2"></i>Mark In Progress
+                                        </a></li>
+                                        <li><a class="dropdown-item" href="#" onclick="updateStatus('{{ request.id }}', 'completed')">
+                                            <i class="fas fa-check me-2"></i>Mark Completed
+                                        </a></li>
+                                        {% endif %}
+                                    </ul>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="10" class="text-center py-4">
+                                <div class="text-muted">
+                                    <i class="fas fa-tools fa-3x mb-3"></i>
+                                    <p>No maintenance requests found.</p>
+                                    <a href="{% url 'maintenance_create' %}" class="btn btn-primary">Add First Request</a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            {% if is_paginated %}
+            <nav aria-label="Maintenance requests pagination" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1">&laquo; First</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+                        </li>
+                    {% endif %}
+
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ num }}</span>
+                            </li>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Last &raquo;</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+// Search functionality
+document.getElementById('searchInput').addEventListener('input', function() {
+    filterTable();
+});
+
+// Filter functionality
+document.querySelectorAll('input[name="statusFilter"]').forEach(function(radio) {
+    radio.addEventListener('change', filterTable);
+});
+
+document.getElementById('priorityFilter').addEventListener('change', filterTable);
+document.getElementById('issueTypeFilter').addEventListener('change', filterTable);
+document.getElementById('dateFromFilter').addEventListener('change', filterTable);
+document.getElementById('dateToFilter').addEventListener('change', filterTable);
+
+function filterTable() {
+    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+    const statusFilter = document.querySelector('input[name="statusFilter"]:checked').value;
+    const priorityFilter = document.getElementById('priorityFilter').value;
+    const issueTypeFilter = document.getElementById('issueTypeFilter').value;
+    const dateFromFilter = document.getElementById('dateFromFilter').value;
+    const dateToFilter = document.getElementById('dateToFilter').value;
+    
+    const rows = document.querySelectorAll('#maintenanceTableBody tr');
+    
+    rows.forEach(function(row) {
+        const cells = row.querySelectorAll('td');
+        if (cells.length === 1) return; // Skip empty state row
+        
+        const requestId = cells[0].textContent.toLowerCase();
+        const property = cells[1].textContent.toLowerCase();
+        const description = row.dataset.description ? row.dataset.description.toLowerCase() : '';
+        const status = row.dataset.status || '';
+        const priority = row.dataset.priority || '';
+        const issueType = row.dataset.issueType || '';
+        const reportedDate = row.dataset.reportedDate || '';
+        
+        let show = true;
+        
+        // Search filter
+        if (searchTerm && !requestId.includes(searchTerm) && !property.includes(searchTerm) && !description.includes(searchTerm)) {
+            show = false;
+        }
+        
+        // Status filter
+        if (statusFilter !== 'all' && status !== statusFilter) {
+            show = false;
+        }
+        
+        // Priority filter
+        if (priorityFilter && priority !== priorityFilter) {
+            show = false;
+        }
+        
+        // Issue type filter
+        if (issueTypeFilter && issueType !== issueTypeFilter) {
+            show = false;
+        }
+        
+        // Date filters
+        if (dateFromFilter && reportedDate < dateFromFilter) {
+            show = false;
+        }
+        
+        if (dateToFilter && reportedDate > dateToFilter) {
+            show = false;
+        }
+        
+        row.style.display = show ? '' : 'none';
+    });
+}
+
+function updateStatus(requestId, newStatus) {
+    if (confirm('Are you sure you want to update the status of this maintenance request?')) {
+        // AJAX call to update status
+        fetch(`/api/maintenance-requests/${requestId}/update-status/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify({
+                status: newStatus
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Error updating status: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error updating status');
+        });
+    }
+}
+</script>
+{% endblock %}

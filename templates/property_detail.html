@@ -1,0 +1,122 @@
+{% extends 'base.html' %}
+{% load currency_filters %}
+
+{% block title %}{{ property.address }} - EstateFlow{% endblock %}
+
+{% block content %}
+<div class="px-10 py-8">
+    <div class="max-w-7xl mx-auto">
+        <!-- Breadcrumb -->
+        <div class="flex flex-wrap gap-2 mb-6">
+            <a class="text-[#49739c] text-base font-medium leading-normal hover:text-[#0d80f2] transition-colors" href="{% url 'property-list' %}">Properties</a>
+            <span class="text-[#49739c] text-base font-medium leading-normal">/</span>
+            <span class="text-[#0d141c] text-base font-medium leading-normal">{{ property.address }}</span>
+        </div>
+
+        <!-- Header Section -->
+        <div class="flex flex-wrap justify-between gap-3 mb-8">
+            <div class="flex min-w-72 flex-col gap-3">
+                <h1 class="text-[#0d141c] tracking-light text-[32px] font-bold leading-tight">{{ property.address }}</h1>
+                <div class="flex items-center gap-4">
+                    <p class="text-[#49739c] text-sm font-normal leading-normal">{{ property.city }}, {{ property.area }}</p>
+                    <div class="ml-4">
+                        {% if property.status == 'available' %}
+                            <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">Available</span>
+                        {% elif property.status == 'occupied' %}
+                            <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">Occupied</span>
+                        {% elif property.status == 'maintenance' %}
+                            <span class="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-medium">Maintenance</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Image Gallery -->
+        {% if property.image %}
+        <div class="w-full mb-8">
+            <div class="w-full gap-1 overflow-hidden bg-slate-50 aspect-[3/2] rounded-lg">
+                <img src="{{ property.image.url }}" alt="{{ property.address }}" class="w-full h-full object-cover rounded-lg">
+            </div>
+        </div>
+        {% else %}
+        <div class="w-full mb-8">
+            <div class="w-full gap-1 overflow-hidden bg-slate-50 aspect-[3/2] rounded-lg flex items-center justify-center">
+                <div class="text-center text-[#49739c]">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="64px" height="64px" fill="currentColor" viewBox="0 0 256 256" class="mx-auto mb-4">
+                        <path d="M240,208H224V136l2.34,2.34A8,8,0,0,0,237.66,127L139.31,28.68a16,16,0,0,0-22.62,0L18.34,127a8,8,0,0,0,11.32,11.31L32,136v72H16a8,8,0,0,0,0-16H240a8,8,0,0,0,0-16ZM48,136l80-80,80,80v72H48Z"></path>
+                    </svg>
+                    <p class="text-lg font-medium">No image available</p>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Property Details -->
+        <div class="bg-white rounded-xl border border-[#e7edf4] shadow-sm mb-8">
+            <div class="p-6">
+                <h2 class="text-[#0d141c] text-[22px] font-bold leading-tight tracking-[-0.015em] mb-6">Property Details</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="flex flex-col gap-1 border-t border-solid border-t-[#cedbe8] py-4">
+                        <p class="text-[#49739c] text-sm font-normal leading-normal">Property Type</p>
+                        <p class="text-[#0d141c] text-base font-medium leading-normal">{{ property.property_type }}</p>
+                    </div>
+                    <div class="flex flex-col gap-1 border-t border-solid border-t-[#cedbe8] py-4">
+                        <p class="text-[#49739c] text-sm font-normal leading-normal">Monthly Rent</p>
+                        <p class="text-[#0d141c] text-lg font-bold leading-tight tracking-[-0.015em]">{{ property.rent_amount|as_currency }}</p>
+                    </div>
+                    <div class="flex flex-col gap-1 border-t border-solid border-t-[#cedbe8] py-4">
+                        <p class="text-[#49739c] text-sm font-normal leading-normal">Security Deposit</p>
+                        <p class="text-[#0d141c] text-base font-medium leading-normal">{{ property.deposit_amount|as_currency }}</p>
+                    </div>
+                    <div class="flex flex-col gap-1 border-t border-solid border-t-[#cedbe8] py-4">
+                        <p class="text-[#49739c] text-sm font-normal leading-normal">Square Footage</p>
+                        <p class="text-[#0d141c] text-base font-medium leading-normal">{{ property.size_sqft }} sq ft</p>
+                    </div>
+                    <div class="flex flex-col gap-1 border-t border-solid border-t-[#cedbe8] py-4">
+                        <p class="text-[#49739c] text-sm font-normal leading-normal">Furnished Type</p>
+                        <p class="text-[#0d141c] text-base font-medium leading-normal">{{ property.furnished_type }}</p>
+                    </div>
+                    <div class="flex flex-col gap-1 border-t border-solid border-t-[#cedbe8] py-4">
+                        <p class="text-[#49739c] text-sm font-normal leading-normal">Location</p>
+                        <p class="text-[#0d141c] text-base font-medium leading-normal">{{ property.city }}, {{ property.area }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Amenities -->
+        {% if property.amenities %}
+        <div class="bg-white rounded-xl border border-[#e7edf4] shadow-sm mb-8">
+            <div class="p-6">
+                <h2 class="text-[#0d141c] text-[22px] font-bold leading-tight tracking-[-0.015em] mb-6">Amenities</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {% for amenity in property.amenities %}
+                    <div class="flex items-center gap-3">
+                        <div class="w-2 h-2 bg-[#0d80f2] rounded-full"></div>
+                        <p class="text-[#0d141c] text-base font-normal leading-normal">{{ amenity }}</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Action Buttons -->
+        <div class="flex justify-start gap-4">
+            <a href="{% url 'property-update' property.pk %}" class="flex min-w-[120px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-6 bg-[#0d80f2] text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-[#0b6fd1] transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16px" height="16px" fill="currentColor" viewBox="0 0 256 256" class="mr-2">
+                    <path d="M227.31,73.37,182.63,28.69a16,16,0,0,0-22.63,0L36.69,152A15.86,15.86,0,0,0,32,163.31V208a16,16,0,0,0,16,16H92.69A15.86,15.86,0,0,0,104,219.31L227.31,96a16,16,0,0,0,0-22.63ZM92.69,208H48V163.31l88-88L180.69,120ZM192,108.69,147.31,64l24-24L216,84.69Z"></path>
+                </svg>
+                Edit Property
+            </a>
+            <a href="{% url 'property-list' %}" class="flex min-w-[120px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-6 bg-[#e7edf4] text-[#0d141c] text-sm font-bold leading-normal tracking-[0.015em] hover:bg-[#cedbe8] transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16px" height="16px" fill="currentColor" viewBox="0 0 256 256" class="mr-2">
+                    <path d="M224,128a8,8,0,0,1-8,8H59.31l58.35,58.34a8,8,0,0,1-11.32,11.32l-72-72a8,8,0,0,1,0-11.32l72-72a8,8,0,0,1,11.32,11.32L59.31,120H216A8,8,0,0,1,224,128Z"></path>
+                </svg>
+                Back to Properties
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

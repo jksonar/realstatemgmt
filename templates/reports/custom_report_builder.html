@@ -1,0 +1,568 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Custom Report Builder - Real Estate Management{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'financial-report' %}">Reports</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Custom Report Builder</li>
+        </ol>
+    </nav>
+
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0">Custom Report Builder</h1>
+        <div class="d-flex gap-2">
+            <button class="btn btn-outline-secondary" onclick="resetForm()">
+                <i class="fas fa-undo me-2"></i>Reset
+            </button>
+            <button class="btn btn-outline-primary" onclick="saveTemplate()">
+                <i class="fas fa-save me-2"></i>Save Template
+            </button>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Report Configuration -->
+        <div class="col-lg-4 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-cog me-2"></i>Report Configuration
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form id="reportForm">
+                        <!-- Report Type -->
+                        <div class="mb-3">
+                            <label for="reportType" class="form-label">Report Type</label>
+                            <select class="form-select" id="reportType" onchange="updateDataModels()">
+                                <option value="">Select Report Type</option>
+                                <option value="financial">Financial Report</option>
+                                <option value="property">Property Report</option>
+                                <option value="tenant">Tenant Report</option>
+                                <option value="maintenance">Maintenance Report</option>
+                                <option value="lease">Lease Report</option>
+                            </select>
+                        </div>
+
+                        <!-- Data Model -->
+                        <div class="mb-3">
+                            <label for="dataModel" class="form-label">Data Model</label>
+                            <select class="form-select" id="dataModel" onchange="updateFields()">
+                                <option value="">Select Data Model</option>
+                            </select>
+                        </div>
+
+                        <!-- Date Range -->
+                        <div class="mb-3">
+                            <label class="form-label">Date Range</label>
+                            <div class="row">
+                                <div class="col-6">
+                                    <input type="date" class="form-control" id="startDate" placeholder="Start Date">
+                                </div>
+                                <div class="col-6">
+                                    <input type="date" class="form-control" id="endDate" placeholder="End Date">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Quick Date Filters -->
+                        <div class="mb-3">
+                            <label class="form-label">Quick Filters</label>
+                            <div class="btn-group-vertical d-grid gap-1">
+                                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setDateRange('today')">Today</button>
+                                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setDateRange('week')">This Week</button>
+                                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setDateRange('month')">This Month</button>
+                                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setDateRange('quarter')">This Quarter</button>
+                                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setDateRange('year')">This Year</button>
+                            </div>
+                        </div>
+
+                        <!-- Output Format -->
+                        <div class="mb-3">
+                            <label for="outputFormat" class="form-label">Output Format</label>
+                            <select class="form-select" id="outputFormat">
+                                <option value="html">HTML (Web View)</option>
+                                <option value="pdf">PDF Document</option>
+                                <option value="csv">CSV Spreadsheet</option>
+                                <option value="excel">Excel Workbook</option>
+                            </select>
+                        </div>
+
+                        <!-- Generate Button -->
+                        <button type="button" class="btn btn-primary w-100" onclick="generateReport()">
+                            <i class="fas fa-chart-bar me-2"></i>Generate Report
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Saved Templates -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h6 class="card-title mb-0">
+                        <i class="fas fa-bookmark me-2"></i>Saved Templates
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush" id="savedTemplates">
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <div class="fw-medium">Monthly Revenue</div>
+                                <small class="text-muted">Financial report for monthly revenue</small>
+                            </div>
+                            <button class="btn btn-sm btn-outline-primary" onclick="loadTemplate('monthly-revenue')">Load</button>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <div class="fw-medium">Property Performance</div>
+                                <small class="text-muted">Property occupancy and revenue</small>
+                            </div>
+                            <button class="btn btn-sm btn-outline-primary" onclick="loadTemplate('property-performance')">Load</button>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <div class="fw-medium">Maintenance Summary</div>
+                                <small class="text-muted">Maintenance requests and costs</small>
+                            </div>
+                            <button class="btn btn-sm btn-outline-primary" onclick="loadTemplate('maintenance-summary')">Load</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Field Selection -->
+        <div class="col-lg-4 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-list me-2"></i>Available Fields
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <input type="text" class="form-control" placeholder="Search fields..." id="fieldSearch" onkeyup="filterFields()">
+                    </div>
+                    <div id="availableFields" class="border rounded p-2" style="height: 400px; overflow-y: auto;">
+                        <p class="text-muted text-center mt-5">Select a data model to view available fields</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Selected Fields -->
+        <div class="col-lg-4 mb-4">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-check-square me-2"></i>Selected Fields
+                    </h5>
+                    <button class="btn btn-sm btn-outline-danger" onclick="clearSelectedFields()">Clear All</button>
+                </div>
+                <div class="card-body">
+                    <div id="selectedFields" class="border rounded p-2" style="height: 400px; overflow-y: auto;">
+                        <p class="text-muted text-center mt-5">No fields selected</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filters and Grouping -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h6 class="card-title mb-0">
+                        <i class="fas fa-filter me-2"></i>Filters & Grouping
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label for="groupBy" class="form-label">Group By</label>
+                        <select class="form-select" id="groupBy">
+                            <option value="">No Grouping</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="orderBy" class="form-label">Order By</label>
+                        <select class="form-select" id="orderBy">
+                            <option value="">Default Order</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="limitResults" class="form-label">Limit Results</label>
+                        <input type="number" class="form-control" id="limitResults" placeholder="Leave empty for all results" min="1">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Report Preview -->
+    <div class="card" id="reportPreview" style="display: none;">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="card-title mb-0">
+                <i class="fas fa-eye me-2"></i>Report Preview
+            </h5>
+            <div class="d-flex gap-2">
+                <button class="btn btn-outline-primary" onclick="downloadReport()">
+                    <i class="fas fa-download me-2"></i>Download
+                </button>
+                <button class="btn btn-outline-secondary" onclick="emailReport()">
+                    <i class="fas fa-envelope me-2"></i>Email
+                </button>
+            </div>
+        </div>
+        <div class="card-body">
+            <div id="reportContent">
+                <!-- Report content will be loaded here -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Data model configurations
+const dataModels = {
+    financial: [
+        { value: 'payment', label: 'Payments' },
+        { value: 'lease', label: 'Leases' },
+        { value: 'property', label: 'Properties' }
+    ],
+    property: [
+        { value: 'property', label: 'Properties' },
+        { value: 'lease', label: 'Leases' }
+    ],
+    tenant: [
+        { value: 'tenant', label: 'Tenants' },
+        { value: 'lease', label: 'Leases' }
+    ],
+    maintenance: [
+        { value: 'maintenancerequest', label: 'Maintenance Requests' }
+    ],
+    lease: [
+        { value: 'lease', label: 'Leases' },
+        { value: 'tenant', label: 'Tenants' },
+        { value: 'property', label: 'Properties' }
+    ]
+};
+
+// Field configurations
+const modelFields = {
+    payment: [
+        { name: 'payment_id', label: 'Payment ID', type: 'text' },
+        { name: 'amount', label: 'Amount', type: 'number' },
+        { name: 'due_date', label: 'Due Date', type: 'date' },
+        { name: 'payment_date', label: 'Payment Date', type: 'date' },
+        { name: 'status', label: 'Status', type: 'choice' },
+        { name: 'payment_method', label: 'Payment Method', type: 'choice' },
+        { name: 'lease__property__property_id', label: 'Property ID', type: 'text' },
+        { name: 'lease__tenant__first_name', label: 'Tenant First Name', type: 'text' },
+        { name: 'lease__tenant__last_name', label: 'Tenant Last Name', type: 'text' }
+    ],
+    property: [
+        { name: 'property_id', label: 'Property ID', type: 'text' },
+        { name: 'address', label: 'Address', type: 'text' },
+        { name: 'property_type', label: 'Property Type', type: 'choice' },
+        { name: 'bedrooms', label: 'Bedrooms', type: 'number' },
+        { name: 'bathrooms', label: 'Bathrooms', type: 'number' },
+        { name: 'rent_amount', label: 'Rent Amount', type: 'number' },
+        { name: 'status', label: 'Status', type: 'choice' }
+    ],
+    tenant: [
+        { name: 'first_name', label: 'First Name', type: 'text' },
+        { name: 'last_name', label: 'Last Name', type: 'text' },
+        { name: 'email', label: 'Email', type: 'email' },
+        { name: 'phone', label: 'Phone', type: 'text' },
+        { name: 'date_of_birth', label: 'Date of Birth', type: 'date' },
+        { name: 'employment_status', label: 'Employment Status', type: 'choice' }
+    ],
+    lease: [
+        { name: 'lease_id', label: 'Lease ID', type: 'text' },
+        { name: 'start_date', label: 'Start Date', type: 'date' },
+        { name: 'end_date', label: 'End Date', type: 'date' },
+        { name: 'rent_amount', label: 'Rent Amount', type: 'number' },
+        { name: 'security_deposit', label: 'Security Deposit', type: 'number' },
+        { name: 'status', label: 'Status', type: 'choice' }
+    ],
+    maintenancerequest: [
+        { name: 'request_id', label: 'Request ID', type: 'text' },
+        { name: 'issue_type', label: 'Issue Type', type: 'choice' },
+        { name: 'priority', label: 'Priority', type: 'choice' },
+        { name: 'status', label: 'Status', type: 'choice' },
+        { name: 'cost', label: 'Cost', type: 'number' },
+        { name: 'reported_date', label: 'Reported Date', type: 'date' },
+        { name: 'completed_date', label: 'Completed Date', type: 'date' }
+    ]
+};
+
+let selectedFields = [];
+
+function updateDataModels() {
+    const reportType = document.getElementById('reportType').value;
+    const dataModelSelect = document.getElementById('dataModel');
+    
+    dataModelSelect.innerHTML = '<option value="">Select Data Model</option>';
+    
+    if (reportType && dataModels[reportType]) {
+        dataModels[reportType].forEach(model => {
+            const option = document.createElement('option');
+            option.value = model.value;
+            option.textContent = model.label;
+            dataModelSelect.appendChild(option);
+        });
+    }
+    
+    // Clear fields
+    document.getElementById('availableFields').innerHTML = '<p class="text-muted text-center mt-5">Select a data model to view available fields</p>';
+    clearSelectedFields();
+}
+
+function updateFields() {
+    const dataModel = document.getElementById('dataModel').value;
+    const fieldsContainer = document.getElementById('availableFields');
+    
+    if (!dataModel || !modelFields[dataModel]) {
+        fieldsContainer.innerHTML = '<p class="text-muted text-center mt-5">Select a data model to view available fields</p>';
+        return;
+    }
+    
+    fieldsContainer.innerHTML = '';
+    
+    modelFields[dataModel].forEach(field => {
+        const fieldDiv = document.createElement('div');
+        fieldDiv.className = 'field-item p-2 border-bottom cursor-pointer';
+        fieldDiv.innerHTML = `
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="fw-medium">${field.label}</div>
+                    <small class="text-muted">${field.name} (${field.type})</small>
+                </div>
+                <button class="btn btn-sm btn-outline-primary" onclick="addField('${field.name}', '${field.label}', '${field.type}')">
+                    <i class="fas fa-plus"></i>
+                </button>
+            </div>
+        `;
+        fieldsContainer.appendChild(fieldDiv);
+    });
+    
+    updateGroupByOptions();
+}
+
+function addField(name, label, type) {
+    if (selectedFields.find(f => f.name === name)) {
+        return; // Field already selected
+    }
+    
+    selectedFields.push({ name, label, type });
+    updateSelectedFieldsDisplay();
+    updateGroupByOptions();
+}
+
+function removeField(name) {
+    selectedFields = selectedFields.filter(f => f.name !== name);
+    updateSelectedFieldsDisplay();
+    updateGroupByOptions();
+}
+
+function updateSelectedFieldsDisplay() {
+    const container = document.getElementById('selectedFields');
+    
+    if (selectedFields.length === 0) {
+        container.innerHTML = '<p class="text-muted text-center mt-5">No fields selected</p>';
+        return;
+    }
+    
+    container.innerHTML = '';
+    
+    selectedFields.forEach(field => {
+        const fieldDiv = document.createElement('div');
+        fieldDiv.className = 'selected-field p-2 border-bottom d-flex justify-content-between align-items-center';
+        fieldDiv.innerHTML = `
+            <div>
+                <div class="fw-medium">${field.label}</div>
+                <small class="text-muted">${field.name}</small>
+            </div>
+            <button class="btn btn-sm btn-outline-danger" onclick="removeField('${field.name}')">
+                <i class="fas fa-times"></i>
+            </button>
+        `;
+        container.appendChild(fieldDiv);
+    });
+}
+
+function updateGroupByOptions() {
+    const groupBySelect = document.getElementById('groupBy');
+    const orderBySelect = document.getElementById('orderBy');
+    
+    // Clear existing options
+    groupBySelect.innerHTML = '<option value="">No Grouping</option>';
+    orderBySelect.innerHTML = '<option value="">Default Order</option>';
+    
+    // Add selected fields as options
+    selectedFields.forEach(field => {
+        const groupOption = document.createElement('option');
+        groupOption.value = field.name;
+        groupOption.textContent = field.label;
+        groupBySelect.appendChild(groupOption);
+        
+        const orderOption = document.createElement('option');
+        orderOption.value = field.name;
+        orderOption.textContent = field.label + ' (ASC)';
+        orderBySelect.appendChild(orderOption);
+        
+        const orderOptionDesc = document.createElement('option');
+        orderOptionDesc.value = '-' + field.name;
+        orderOptionDesc.textContent = field.label + ' (DESC)';
+        orderBySelect.appendChild(orderOptionDesc);
+    });
+}
+
+function clearSelectedFields() {
+    selectedFields = [];
+    updateSelectedFieldsDisplay();
+    updateGroupByOptions();
+}
+
+function filterFields() {
+    const searchTerm = document.getElementById('fieldSearch').value.toLowerCase();
+    const fieldItems = document.querySelectorAll('.field-item');
+    
+    fieldItems.forEach(item => {
+        const text = item.textContent.toLowerCase();
+        item.style.display = text.includes(searchTerm) ? 'block' : 'none';
+    });
+}
+
+function setDateRange(period) {
+    const today = new Date();
+    const startDateInput = document.getElementById('startDate');
+    const endDateInput = document.getElementById('endDate');
+    
+    let startDate, endDate;
+    
+    switch (period) {
+        case 'today':
+            startDate = endDate = today;
+            break;
+        case 'week':
+            startDate = new Date(today.getFullYear(), today.getMonth(), today.getDate() - today.getDay());
+            endDate = new Date(today.getFullYear(), today.getMonth(), today.getDate() - today.getDay() + 6);
+            break;
+        case 'month':
+            startDate = new Date(today.getFullYear(), today.getMonth(), 1);
+            endDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+            break;
+        case 'quarter':
+            const quarter = Math.floor(today.getMonth() / 3);
+            startDate = new Date(today.getFullYear(), quarter * 3, 1);
+            endDate = new Date(today.getFullYear(), quarter * 3 + 3, 0);
+            break;
+        case 'year':
+            startDate = new Date(today.getFullYear(), 0, 1);
+            endDate = new Date(today.getFullYear(), 11, 31);
+            break;
+    }
+    
+    startDateInput.value = startDate.toISOString().split('T')[0];
+    endDateInput.value = endDate.toISOString().split('T')[0];
+}
+
+function generateReport() {
+    if (selectedFields.length === 0) {
+        alert('Please select at least one field for the report.');
+        return;
+    }
+    
+    const formData = {
+        reportType: document.getElementById('reportType').value,
+        dataModel: document.getElementById('dataModel').value,
+        fields: selectedFields.map(f => f.name),
+        startDate: document.getElementById('startDate').value,
+        endDate: document.getElementById('endDate').value,
+        groupBy: document.getElementById('groupBy').value,
+        orderBy: document.getElementById('orderBy').value,
+        limit: document.getElementById('limitResults').value,
+        outputFormat: document.getElementById('outputFormat').value
+    };
+    
+    // Show loading state
+    const reportPreview = document.getElementById('reportPreview');
+    const reportContent = document.getElementById('reportContent');
+    
+    reportPreview.style.display = 'block';
+    reportContent.innerHTML = '<div class="text-center py-4"><i class="fas fa-spinner fa-spin fa-2x"></i><p class="mt-2">Generating report...</p></div>';
+    
+    // Simulate API call (replace with actual implementation)
+    setTimeout(() => {
+        reportContent.innerHTML = `
+            <div class="alert alert-success">
+                <i class="fas fa-check-circle me-2"></i>
+                Report generated successfully! This is a preview of your custom report.
+            </div>
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead class="table-dark">
+                        <tr>
+                            ${selectedFields.map(f => `<th>${f.label}</th>`).join('')}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            ${selectedFields.map(() => '<td>Sample Data</td>').join('')}
+                        </tr>
+                        <tr>
+                            ${selectedFields.map(() => '<td>Sample Data</td>').join('')}
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        `;
+    }, 2000);
+}
+
+function resetForm() {
+    document.getElementById('reportForm').reset();
+    clearSelectedFields();
+    document.getElementById('availableFields').innerHTML = '<p class="text-muted text-center mt-5">Select a data model to view available fields</p>';
+    document.getElementById('reportPreview').style.display = 'none';
+}
+
+function saveTemplate() {
+    const templateName = prompt('Enter a name for this template:');
+    if (templateName) {
+        alert('Template "' + templateName + '" saved successfully!');
+    }
+}
+
+function loadTemplate(templateId) {
+    alert('Loading template: ' + templateId);
+}
+
+function downloadReport() {
+    alert('Download functionality would be implemented here');
+}
+
+function emailReport() {
+    alert('Email functionality would be implemented here');
+}
+</script>
+
+<style>
+.field-item:hover {
+    background-color: #f8f9fa;
+}
+
+.selected-field {
+    background-color: #e3f2fd;
+}
+
+.cursor-pointer {
+    cursor: pointer;
+}
+</style>
+{% endblock %}

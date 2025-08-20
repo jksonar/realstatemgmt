@@ -11,6 +11,10 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,12 +24,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-wa66t2-vwf!ua_ju!(i^r47c@x6k7vf8%(c8(5jw$t5yd#1$)m'
+SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = [ '*' ]
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',')
+
 
 
 # Application definition
@@ -40,6 +45,21 @@ INSTALLED_APPS = [
     'core',
     'rest_framework',
 ]
+
+AUTH_USER_MODEL = 'core.CustomUser'
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+}
+
+from datetime import timedelta
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=5),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -57,13 +77,14 @@ ROOT_URLCONF = 'real_estate_management.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR.parent / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'core.context_processors.current_year',
             ],
         },
     },
@@ -77,6 +98,12 @@ WSGI_APPLICATION = 'real_estate_management.wsgi.application'
 
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATICFILES_DIRS = [
+    BASE_DIR.parent / "static",
+]
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR.parent / 'media'
 
 
 # Database
@@ -133,14 +160,31 @@ CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = 'UTC'
 
+# Caching Configuration
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/1",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    }
+}
+
+from celery.schedules import crontab
+
 # Celery Beat Configuration for scheduled tasks
 CELERY_BEAT_SCHEDULE = {
     'send-payment-reminders': {
         'task': 'core.tasks.send_payment_reminders',
-        'schedule': 86400.0,  # Run daily (24 hours in seconds)
+        'schedule': crontab(hour=0, minute=0),  # Daily at midnight
     },
     'mark-overdue-payments': {
         'task': 'core.tasks.mark_overdue_payments',
-        'schedule': 3600.0,  # Run hourly
+        'schedule': crontab(hour='*'),  # Run hourly
+    },
+    'email-financial-report-monthly': {
+        'task': 'core.tasks.email_financial_report',
+        'schedule': crontab(day_of_month=1, hour=0, minute=0),  # At midnight on the first day of the month
     },
 }

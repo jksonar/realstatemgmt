@@ -1,0 +1,225 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{% if form.instance.pk %}Edit Tenant{% else %}Add New Tenant{% endif %} - EstateFlow{% endblock %}
+
+{% block content %}
+<!-- Breadcrumb -->
+<nav class="flex px-5 py-3 text-gray-700 bg-gray-50 rounded-lg" aria-label="Breadcrumb">
+    <ol class="inline-flex items-center space-x-1 md:space-x-3">
+        <li class="inline-flex items-center">
+            <a href="{% url 'property_list' %}" class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-blue-600">
+                <svg class="w-3 h-3 mr-2.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="m19.707 9.293-2-2-7-7a1 1 0 0 0-1.414 0l-7 7-2 2a1 1 0 0 0 1.414 1.414L2 10.414V18a2 2 0 0 0 2 2h3a1 1 0 0 0 1-1v-4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v4a1 1 0 0 0 1 1h3a2 2 0 0 0 2-2v-7.586l.293.293a1 1 0 0 0 1.414-1.414Z"/>
+                </svg>
+                Dashboard
+            </a>
+        </li>
+        <li>
+            <div class="flex items-center">
+                <svg class="w-3 h-3 text-gray-400 mx-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 9 4-4-4-4"/>
+                </svg>
+                <a href="{% url 'tenant_list' %}" class="ml-1 text-sm font-medium text-gray-700 hover:text-blue-600 md:ml-2">Tenants</a>
+            </div>
+        </li>
+        <li aria-current="page">
+            <div class="flex items-center">
+                <svg class="w-3 h-3 text-gray-400 mx-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 9 4-4-4-4"/>
+                </svg>
+                <span class="ml-1 text-sm font-medium text-gray-500 md:ml-2">{% if form.instance.pk %}Edit Tenant{% else %}Add New Tenant{% endif %}</span>
+            </div>
+        </li>
+    </ol>
+</nav>
+
+<div class="px-40 flex flex-1 justify-center py-5">
+    <div class="layout-content-container flex flex-col max-w-[960px] flex-1">
+        <!-- Header -->
+        <div class="flex flex-wrap justify-between gap-3 p-4">
+            <div>
+                <h1 class="text-[#0d141c] tracking-light text-[32px] font-bold leading-tight">{% if form.instance.pk %}Edit Tenant{% else %}Add New Tenant{% endif %}</h1>
+                <p class="text-[#49739c] text-base font-normal leading-normal">{% if form.instance.pk %}Update tenant information{% else %}Enter tenant details to add them to the system{% endif %}</p>
+            </div>
+        </div>
+        
+        <!-- Form -->
+        <div class="p-4">
+            <div class="bg-white rounded-lg border border-[#cedbe8] p-6">
+                <form method="post" class="space-y-6">
+                    {% csrf_token %}
+                    
+                    <!-- Display form errors -->
+                    {% if form.non_field_errors %}
+                        <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+                            <div class="flex">
+                                <svg class="w-5 h-5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+                                </svg>
+                                <div class="ml-3">
+                                    <h3 class="text-sm font-medium text-red-800">Please correct the following errors:</h3>
+                                    <div class="mt-2 text-sm text-red-700">
+                                        {{ form.non_field_errors }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                    
+                    <!-- Personal Information Section -->
+                    <div>
+                        <h2 class="text-[#0d141c] text-xl font-bold leading-tight mb-4">Personal Information</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- Tenant ID -->
+                            <div>
+                                <label for="{{ form.tenant_id.id_for_label }}" class="block text-[#0d141c] text-sm font-medium leading-normal mb-2">
+                                    Tenant ID
+                                    {% if form.tenant_id.field.required %}<span class="text-red-500">*</span>{% endif %}
+                                </label>
+                                <input type="text" name="{{ form.tenant_id.name }}" id="{{ form.tenant_id.id_for_label }}" 
+                                       value="{{ form.tenant_id.value|default:'' }}" 
+                                       class="w-full px-4 py-3 bg-[#f8fafc] border border-[#e7edf4] rounded-lg text-[#0d141c] placeholder-[#49739c] focus:outline-none focus:ring-2 focus:ring-[#2884ef] focus:border-transparent transition-colors {% if form.tenant_id.errors %}border-red-500{% endif %}" 
+                                       placeholder="Enter unique tenant ID">
+                                {% if form.tenant_id.errors %}
+                                    <p class="mt-1 text-sm text-red-600">{{ form.tenant_id.errors.0 }}</p>
+                                {% endif %}
+                                {% if form.tenant_id.help_text %}
+                                    <p class="mt-1 text-sm text-[#49739c]">{{ form.tenant_id.help_text }}</p>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Empty space for layout -->
+                            <div></div>
+                            
+                            <!-- First Name -->
+                            <div>
+                                <label for="{{ form.first_name.id_for_label }}" class="block text-[#0d141c] text-sm font-medium leading-normal mb-2">
+                                    First Name
+                                    {% if form.first_name.field.required %}<span class="text-red-500">*</span>{% endif %}
+                                </label>
+                                <input type="text" name="{{ form.first_name.name }}" id="{{ form.first_name.id_for_label }}" 
+                                       value="{{ form.first_name.value|default:'' }}" 
+                                       class="w-full px-4 py-3 bg-[#f8fafc] border border-[#e7edf4] rounded-lg text-[#0d141c] placeholder-[#49739c] focus:outline-none focus:ring-2 focus:ring-[#2884ef] focus:border-transparent transition-colors {% if form.first_name.errors %}border-red-500{% endif %}" 
+                                       placeholder="Enter first name">
+                                {% if form.first_name.errors %}
+                                    <p class="mt-1 text-sm text-red-600">{{ form.first_name.errors.0 }}</p>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Last Name -->
+                            <div>
+                                <label for="{{ form.last_name.id_for_label }}" class="block text-[#0d141c] text-sm font-medium leading-normal mb-2">
+                                    Last Name
+                                    {% if form.last_name.field.required %}<span class="text-red-500">*</span>{% endif %}
+                                </label>
+                                <input type="text" name="{{ form.last_name.name }}" id="{{ form.last_name.id_for_label }}" 
+                                       value="{{ form.last_name.value|default:'' }}" 
+                                       class="w-full px-4 py-3 bg-[#f8fafc] border border-[#e7edf4] rounded-lg text-[#0d141c] placeholder-[#49739c] focus:outline-none focus:ring-2 focus:ring-[#2884ef] focus:border-transparent transition-colors {% if form.last_name.errors %}border-red-500{% endif %}" 
+                                       placeholder="Enter last name">
+                                {% if form.last_name.errors %}
+                                    <p class="mt-1 text-sm text-red-600">{{ form.last_name.errors.0 }}</p>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Email -->
+                            <div>
+                                <label for="{{ form.email.id_for_label }}" class="block text-[#0d141c] text-sm font-medium leading-normal mb-2">
+                                    Email Address
+                                    {% if form.email.field.required %}<span class="text-red-500">*</span>{% endif %}
+                                </label>
+                                <input type="email" name="{{ form.email.name }}" id="{{ form.email.id_for_label }}" 
+                                       value="{{ form.email.value|default:'' }}" 
+                                       class="w-full px-4 py-3 bg-[#f8fafc] border border-[#e7edf4] rounded-lg text-[#0d141c] placeholder-[#49739c] focus:outline-none focus:ring-2 focus:ring-[#2884ef] focus:border-transparent transition-colors {% if form.email.errors %}border-red-500{% endif %}" 
+                                       placeholder="Enter email address">
+                                {% if form.email.errors %}
+                                    <p class="mt-1 text-sm text-red-600">{{ form.email.errors.0 }}</p>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Phone -->
+                            <div>
+                                <label for="{{ form.phone.id_for_label }}" class="block text-[#0d141c] text-sm font-medium leading-normal mb-2">
+                                    Phone Number
+                                    {% if form.phone.field.required %}<span class="text-red-500">*</span>{% endif %}
+                                </label>
+                                <input type="tel" name="{{ form.phone.name }}" id="{{ form.phone.id_for_label }}" 
+                                       value="{{ form.phone.value|default:'' }}" 
+                                       class="w-full px-4 py-3 bg-[#f8fafc] border border-[#e7edf4] rounded-lg text-[#0d141c] placeholder-[#49739c] focus:outline-none focus:ring-2 focus:ring-[#2884ef] focus:border-transparent transition-colors {% if form.phone.errors %}border-red-500{% endif %}" 
+                                       placeholder="Enter phone number">
+                                {% if form.phone.errors %}
+                                    <p class="mt-1 text-sm text-red-600">{{ form.phone.errors.0 }}</p>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Address -->
+                            <div class="md:col-span-2">
+                                <label for="{{ form.address.id_for_label }}" class="block text-[#0d141c] text-sm font-medium leading-normal mb-2">
+                                    Address
+                                    {% if form.address.field.required %}<span class="text-red-500">*</span>{% endif %}
+                                </label>
+                                <textarea name="{{ form.address.name }}" id="{{ form.address.id_for_label }}" rows="3" 
+                                          class="w-full px-4 py-3 bg-[#f8fafc] border border-[#e7edf4] rounded-lg text-[#0d141c] placeholder-[#49739c] focus:outline-none focus:ring-2 focus:ring-[#2884ef] focus:border-transparent transition-colors resize-none {% if form.address.errors %}border-red-500{% endif %}" 
+                                          placeholder="Enter full address">{{ form.address.value|default:'' }}</textarea>
+                                {% if form.address.errors %}
+                                    <p class="mt-1 text-sm text-red-600">{{ form.address.errors.0 }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Identification Section -->
+                    <div class="border-t border-[#e7edf4] pt-6">
+                        <h2 class="text-[#0d141c] text-xl font-bold leading-tight mb-4">Identification</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- ID Proof Type -->
+                            <div>
+                                <label for="{{ form.id_proof_type.id_for_label }}" class="block text-[#0d141c] text-sm font-medium leading-normal mb-2">
+                                    ID Proof Type
+                                    {% if form.id_proof_type.field.required %}<span class="text-red-500">*</span>{% endif %}
+                                </label>
+                                <input type="text" name="{{ form.id_proof_type.name }}" id="{{ form.id_proof_type.id_for_label }}" 
+                                       value="{{ form.id_proof_type.value|default:'' }}" 
+                                       class="w-full px-4 py-3 bg-[#f8fafc] border border-[#e7edf4] rounded-lg text-[#0d141c] placeholder-[#49739c] focus:outline-none focus:ring-2 focus:ring-[#2884ef] focus:border-transparent transition-colors {% if form.id_proof_type.errors %}border-red-500{% endif %}" 
+                                       placeholder="e.g., Driver's License, Passport, National ID">
+                                {% if form.id_proof_type.errors %}
+                                    <p class="mt-1 text-sm text-red-600">{{ form.id_proof_type.errors.0 }}</p>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- ID Proof Number -->
+                            <div>
+                                <label for="{{ form.id_proof_number.id_for_label }}" class="block text-[#0d141c] text-sm font-medium leading-normal mb-2">
+                                    ID Proof Number
+                                    {% if form.id_proof_number.field.required %}<span class="text-red-500">*</span>{% endif %}
+                                </label>
+                                <input type="text" name="{{ form.id_proof_number.name }}" id="{{ form.id_proof_number.id_for_label }}" 
+                                       value="{{ form.id_proof_number.value|default:'' }}" 
+                                       class="w-full px-4 py-3 bg-[#f8fafc] border border-[#e7edf4] rounded-lg text-[#0d141c] placeholder-[#49739c] focus:outline-none focus:ring-2 focus:ring-[#2884ef] focus:border-transparent transition-colors {% if form.id_proof_number.errors %}border-red-500{% endif %}" 
+                                       placeholder="Enter ID number">
+                                {% if form.id_proof_number.errors %}
+                                    <p class="mt-1 text-sm text-red-600">{{ form.id_proof_number.errors.0 }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Form Actions -->
+                    <div class="border-t border-[#e7edf4] pt-6">
+                        <div class="flex gap-4 justify-end">
+                            <a href="{% if form.instance.pk %}{% url 'tenant_detail' form.instance.pk %}{% else %}{% url 'tenant_list' %}{% endif %}" 
+                               class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#e7edf4] text-[#0d141c] text-sm font-medium leading-normal hover:bg-[#d1dce6] transition-colors">
+                                <span class="truncate">Cancel</span>
+                            </a>
+                            <button type="submit" 
+                                    class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#2884ef] text-white text-sm font-medium leading-normal hover:bg-[#1a6bd1] transition-colors">
+                                <span class="truncate">{% if form.instance.pk %}Update Tenant{% else %}Add Tenant{% endif %}</span>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

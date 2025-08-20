@@ -1,0 +1,37 @@
+[
+  {
+    "model": "core.property",
+    "pk": 1,
+    "fields": {
+      "property_id": "P001",
+      "address": "123 Main St",
+      "city": "Anytown",
+      "area": "Downtown",
+      "property_type": "2BHK",
+      "size_sqft": 1200,
+      "rent_amount": "1500.00",
+      "deposit_amount": "3000.00",
+      "status": "available",
+      "furnished_type": "fully-furnished",
+      "amenities": ["swimming pool", "gym"],
+      "created_at": "2025-08-04T10:00:00Z",
+      "updated_at": "2025-08-04T10:00:00Z"
+    }
+  },
+  {
+    "model": "core.tenant",
+    "pk": 1,
+    "fields": {
+      "tenant_id": "T001",
+      "first_name": "John",
+      "last_name": "Doe",
+      "email": "john.doe@example.com",
+      "phone": "1234567890",
+      "address": "456 Oak Ave",
+      "id_proof_type": "Passport",
+      "id_proof_number": "A1234567",
+      "created_at": "2025-08-04T11:00:00Z",
+      "updated_at": "2025-08-04T11:00:00Z"
+    }
+  }
+]

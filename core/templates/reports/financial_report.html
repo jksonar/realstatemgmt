@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Financial Report</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: sans-serif; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ddd; padding: 8px; }
+        th { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+    <h1>Financial Report</h1>
+    
+    <h2>Summary</h2>
+    <p>Total Revenue: ${{ total_revenue }}</p>
+    <p>Outstanding Payments: ${{ outstanding_payments }}</p>
+    <p>Active Leases: {{ active_leases }}</p>
+
+    <h2>All Payments</h2>
+    <table>
+        <tr>
+            <th>Payment ID</th>
+            <th>Lease ID</th>
+            <th>Amount</th>
+            <th>Status</th>
+            <th>Payment Date</th>
+        </tr>
+        {% for payment in payments %}
+        <tr>
+            <td>{{ payment.payment_id }}</td>
+            <td>{{ payment.lease.lease_id }}</td>
+            <td>${{ payment.amount }}</td>
+            <td>{{ payment.status }}</td>
+            <td>{{ payment.payment_date }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <h2>Payment Status Distribution</h2>
+    <canvas id="paymentStatusChart" width="400" height="200"></canvas>
+
+    <script>
+        const ctx = document.getElementById('paymentStatusChart').getContext('2d');
+        const paymentStatusChart = new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: ['Paid', 'Pending', 'Overdue'],
+                datasets: [{
+                    label: 'Payment Status',
+                    data: [
+                        {{ paid_payments_count }},
+                        {{ pending_payments_count }},
+                        {{ overdue_payments_count }}
+                    ],
+                    backgroundColor: [
+                        'rgba(75, 192, 192, 0.2)',
+                        'rgba(255, 206, 86, 0.2)',
+                        'rgba(255, 99, 132, 0.2)'
+                    ],
+                    borderColor: [
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(255, 206, 86, 1)',
+                        'rgba(255, 99, 132, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            }
+        });
+    </script>
+
+</body>
+</html>

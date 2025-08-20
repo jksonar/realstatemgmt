@@ -1,0 +1,455 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ maintenance_request.request_id }} - Maintenance Request Details{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'maintenance_list' %}">Maintenance Requests</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ maintenance_request.request_id }}</li>
+        </ol>
+    </nav>
+
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-1">Maintenance Request {{ maintenance_request.request_id }}</h1>
+            <div class="d-flex align-items-center gap-3">
+                {% if maintenance_request.status == 'reported' %}
+                    <span class="badge bg-warning fs-6">Reported</span>
+                {% elif maintenance_request.status == 'in_progress' %}
+                    <span class="badge bg-info fs-6">In Progress</span>
+                {% elif maintenance_request.status == 'completed' %}
+                    <span class="badge bg-success fs-6">Completed</span>
+                {% endif %}
+                
+                {% if maintenance_request.priority == 'urgent' %}
+                    <span class="badge bg-danger fs-6">Urgent Priority</span>
+                {% elif maintenance_request.priority == 'high' %}
+                    <span class="badge bg-warning fs-6">High Priority</span>
+                {% elif maintenance_request.priority == 'medium' %}
+                    <span class="badge bg-info fs-6">Medium Priority</span>
+                {% else %}
+                    <span class="badge bg-light text-dark fs-6">Low Priority</span>
+                {% endif %}
+            </div>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'maintenance_edit' maintenance_request.id %}" class="btn btn-outline-primary">
+                <i class="fas fa-edit me-2"></i>Edit Request
+            </a>
+            <a href="{% url 'maintenance_list' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Back to Requests
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Main Information -->
+        <div class="col-lg-8">
+            <!-- Request Information -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-tools me-2"></i>Request Information
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label text-muted">Request ID</label>
+                                <div class="fw-medium">{{ maintenance_request.request_id }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label text-muted">Issue Type</label>
+                                <div class="fw-medium">
+                                    <span class="badge bg-secondary">{{ maintenance_request.issue_type|title }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label text-muted">Priority</label>
+                                <div class="fw-medium">
+                                    {% if maintenance_request.priority == 'urgent' %}
+                                        <span class="badge bg-danger">Urgent</span>
+                                    {% elif maintenance_request.priority == 'high' %}
+                                        <span class="badge bg-warning">High</span>
+                                    {% elif maintenance_request.priority == 'medium' %}
+                                        <span class="badge bg-info">Medium</span>
+                                    {% else %}
+                                        <span class="badge bg-light text-dark">Low</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label text-muted">Status</label>
+                                <div class="fw-medium">
+                                    {% if maintenance_request.status == 'reported' %}
+                                        <span class="badge bg-warning">Reported</span>
+                                    {% elif maintenance_request.status == 'in_progress' %}
+                                        <span class="badge bg-info">In Progress</span>
+                                    {% elif maintenance_request.status == 'completed' %}
+                                        <span class="badge bg-success">Completed</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="mb-3">
+                                <label class="form-label text-muted">Description</label>
+                                <div class="fw-medium">{{ maintenance_request.description }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label text-muted">Assigned To</label>
+                                <div class="fw-medium">
+                                    {% if maintenance_request.assigned_to %}
+                                        {{ maintenance_request.assigned_to }}
+                                    {% else %}
+                                        <span class="text-muted">Unassigned</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label text-muted">Cost</label>
+                                <div class="fw-medium">
+                                    {% if maintenance_request.cost %}
+                                        <span class="text-success">${{ maintenance_request.cost|floatformat:2 }}</span>
+                                    {% else %}
+                                        <span class="text-muted">Not specified</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Property Information -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-building me-2"></i>Property Information
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label text-muted">Property ID</label>
+                                <div class="fw-medium">
+                                    <a href="{% url 'property_detail' maintenance_request.property.id %}" class="text-decoration-none">
+                                        {{ maintenance_request.property.property_id }}
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label text-muted">Property Type</label>
+                                <div class="fw-medium">{{ maintenance_request.property.property_type }}</div>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="mb-3">
+                                <label class="form-label text-muted">Address</label>
+                                <div class="fw-medium">{{ maintenance_request.property.address }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label text-muted">City</label>
+                                <div class="fw-medium">{{ maintenance_request.property.city }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label text-muted">Area</label>
+                                <div class="fw-medium">{{ maintenance_request.property.area }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tenant Information -->
+            {% if maintenance_request.tenant %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-user me-2"></i>Tenant Information
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label text-muted">Name</label>
+                                <div class="fw-medium">
+                                    <a href="{% url 'tenant_detail' maintenance_request.tenant.id %}" class="text-decoration-none">
+                                        {{ maintenance_request.tenant.first_name }} {{ maintenance_request.tenant.last_name }}
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label text-muted">Phone</label>
+                                <div class="fw-medium">{{ maintenance_request.tenant.phone }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label text-muted">Email</label>
+                                <div class="fw-medium">{{ maintenance_request.tenant.email }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label text-muted">Tenant ID</label>
+                                <div class="fw-medium">{{ maintenance_request.tenant.tenant_id }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Timeline -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-clock me-2"></i>Timeline
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="timeline">
+                        <div class="timeline-item">
+                            <div class="timeline-marker bg-primary"></div>
+                            <div class="timeline-content">
+                                <h6 class="mb-1">Request Reported</h6>
+                                <p class="text-muted mb-0">{{ maintenance_request.reported_date|date:"M d, Y g:i A" }}</p>
+                            </div>
+                        </div>
+                        
+                        {% if maintenance_request.status == 'in_progress' or maintenance_request.status == 'completed' %}
+                        <div class="timeline-item">
+                            <div class="timeline-marker bg-info"></div>
+                            <div class="timeline-content">
+                                <h6 class="mb-1">Work Started</h6>
+                                <p class="text-muted mb-0">Status changed to In Progress</p>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if maintenance_request.status == 'completed' %}
+                        <div class="timeline-item">
+                            <div class="timeline-marker bg-success"></div>
+                            <div class="timeline-content">
+                                <h6 class="mb-1">Work Completed</h6>
+                                <p class="text-muted mb-0">
+                                    {% if maintenance_request.completed_date %}
+                                        {{ maintenance_request.completed_date|date:"M d, Y g:i A" }}
+                                    {% else %}
+                                        Status changed to Completed
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-bolt me-2"></i>Quick Actions
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        {% if maintenance_request.status == 'reported' %}
+                        <button class="btn btn-info" onclick="updateStatus('in_progress')">
+                            <i class="fas fa-play me-2"></i>Start Work
+                        </button>
+                        {% endif %}
+                        
+                        {% if maintenance_request.status == 'in_progress' %}
+                        <button class="btn btn-success" onclick="updateStatus('completed')">
+                            <i class="fas fa-check me-2"></i>Mark Completed
+                        </button>
+                        {% endif %}
+                        
+                        {% if maintenance_request.status != 'completed' %}
+                        <button class="btn btn-outline-secondary" onclick="assignTechnician()">
+                            <i class="fas fa-user-plus me-2"></i>Assign Technician
+                        </button>
+                        
+                        <button class="btn btn-outline-info" onclick="updateCost()">
+                            <i class="fas fa-dollar-sign me-2"></i>Update Cost
+                        </button>
+                        {% endif %}
+                        
+                        <a href="{% url 'maintenance_edit' maintenance_request.id %}" class="btn btn-outline-primary">
+                            <i class="fas fa-edit me-2"></i>Edit Request
+                        </a>
+                        
+                        <button class="btn btn-outline-secondary" onclick="printRequest()">
+                            <i class="fas fa-print me-2"></i>Print Request
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.timeline {
+    position: relative;
+    padding-left: 30px;
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: 15px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: #dee2e6;
+}
+
+.timeline-item {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.timeline-marker {
+    position: absolute;
+    left: -22px;
+    top: 0;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    box-shadow: 0 0 0 2px #dee2e6;
+}
+
+.timeline-content h6 {
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.timeline-content p {
+    font-size: 0.8rem;
+}
+</style>
+
+<script>
+function updateStatus(newStatus) {
+    if (confirm('Are you sure you want to update the status of this maintenance request?')) {
+        fetch(`/api/maintenance-requests/{{ maintenance_request.id }}/update-status/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify({
+                status: newStatus
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Error updating status: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error updating status');
+        });
+    }
+}
+
+function assignTechnician() {
+    const technician = prompt('Enter technician name:');
+    if (technician) {
+        fetch(`/api/maintenance-requests/{{ maintenance_request.id }}/assign/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify({
+                assigned_to: technician
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Error assigning technician: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error assigning technician');
+        });
+    }
+}
+
+function updateCost() {
+    const cost = prompt('Enter estimated cost:');
+    if (cost && !isNaN(cost)) {
+        fetch(`/api/maintenance-requests/{{ maintenance_request.id }}/update-cost/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify({
+                cost: parseFloat(cost)
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Error updating cost: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error updating cost');
+        });
+    }
+}
+
+function printRequest() {
+    window.print();
+}
+</script>
+{% endblock %}

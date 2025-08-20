@@ -1,5 +1,6 @@
 from celery import shared_task
-from django.core.mail import send_mail
+from django.core.mail import send_mail, EmailMessage
+from django.template.loader import render_to_string
 from django.utils import timezone
 from django.conf import settings
 from django.db.models import Q
@@ -218,3 +219,22 @@ def generate_monthly_payment_report():
     except Exception as e:
         logger.error(f"Error generating monthly payment report: {str(e)}")
         raise
+
+@shared_task
+def email_financial_report():
+    """Generate and email the financial report."""
+    payments = Payment.objects.all()
+    context = {
+        'payments': payments,
+        'total_revenue': sum(p.amount for p in payments if p.status == 'paid'),
+        'outstanding_payments': sum(p.amount for p in payments if p.status in ['pending', 'overdue']),
+    }
+    html_content = render_to_string('reports/financial_report.html', context)
+    email = EmailMessage(
+        'Monthly Financial Report',
+        html_content,
+        'from@example.com',
+        ['to@example.com'],
+    )
+    email.content_subtype = 'html'
+    email.send()

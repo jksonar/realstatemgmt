@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Bulk Update Properties</title>
+    <style>
+        body { font-family: sans-serif; }
+        .property-list { list-style-type: none; padding: 0; }
+        .property-list li { margin-bottom: 5px; }
+    </style>
+</head>
+<body>
+    <h1>Bulk Update Properties</h1>
+    <form method="post">
+        {% csrf_token %}
+        <p>Select properties to update:</p>
+        <ul class="property-list">
+            {{ form.properties }}
+        </ul>
+        <p>{{ form.status.label_tag }} {{ form.status }}</p>
+        <p>{{ form.is_available.label_tag }} {{ form.is_available }}</p>
+        <button type="submit">Update Selected Properties</button>
+    </form>
+</body>
+</html>

@@ -15,11 +15,13 @@ urlpatterns = [
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('api/', include('apps.core.urls')),
     path('accounts/', include('apps.accounts.urls')),
+    path('dashboard/', include('apps.dashboard.urls')),
     path('properties/', include('apps.properties.urls')),
     path('tenants/', include('apps.tenants.urls')),
     path('leases/', include('apps.leases.urls')),
     path('payments/', include('apps.payments.urls')),
     path('maintenance/', include('apps.maintenance.urls')),
+    path('reports/', include('apps.reports.urls')),
 ]
 
 if settings.DEBUG:

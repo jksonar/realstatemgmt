@@ -70,7 +70,7 @@ class LeaseCreateView(LoginRequiredMixin, CreateView):
     model = Lease
     template_name = 'lease_form.html'
     fields = ['property', 'tenant', 'start_date', 'end_date', 'monthly_rent', 'security_deposit', 'status']
-    success_url = reverse_lazy('lease_list')
+    success_url = reverse_lazy('leases:lease_list')
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -96,7 +96,7 @@ class LeaseUpdateView(LoginRequiredMixin, UpdateView):
         return context
     
     def get_success_url(self):
-        return reverse_lazy('lease_detail', kwargs={'pk': self.object.pk})
+        return reverse_lazy('leases:lease_detail', kwargs={'pk': self.object.pk})
     
     def form_valid(self, form):
         messages.success(self.request, 'Lease updated successfully!')

@@ -4,230 +4,250 @@
 
 {% block title %}Dashboard - EstateFlow{% endblock %}
 
-{% block extra_css %}
+{% block styles %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 {% endblock %}
 
 {% block content %}
-<div class="px-40 flex flex-1 justify-center py-5">
-    <div class="layout-content-container flex flex-col max-w-[960px] flex-1">
+<div class="container py-4">
+    <div class="row mb-4">
         <!-- Header -->
-        <div class="flex flex-wrap justify-between gap-3 p-4">
+        <div class="col-12 d-flex justify-content-between align-items-center">
             <div>
-                <h1 class="text-[#0d141c] tracking-light text-[32px] font-bold leading-tight">Dashboard</h1>
-                <p class="text-[#49739c] text-base font-normal leading-normal">Welcome back! Here's what's happening with your properties.</p>
+                <h1 class="fw-bold">Dashboard</h1>
+                <p class="text-muted">Welcome back! Here's what's happening with your properties.</p>
             </div>
-            <div class="flex gap-3">
-                <button class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#e7edf4] text-[#0d141c] text-sm font-medium leading-normal hover:bg-[#d1dce6] transition-colors">
-                    <span class="truncate">Export Report</span>
+            <div class="d-flex gap-2">
+                <button class="btn btn-outline-secondary">
+                    <i class="bi bi-download me-2"></i>Export Report
                 </button>
-                <button class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#2884ef] text-white text-sm font-medium leading-normal hover:bg-[#1a6bd1] transition-colors">
-                    <span class="truncate">Add Property</span>
+                <button class="btn btn-primary">
+                    <i class="bi bi-plus-lg me-2"></i>Add Property
                 </button>
             </div>
         </div>
+    </div>
 
-        <!-- Key Metrics Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 p-4">
-            <!-- Total Revenue Card -->
-            <div class="bg-white rounded-lg border border-[#cedbe8] p-6">
-                <div class="flex items-center justify-between">
+    <!-- Key Metrics Cards -->
+    <div class="row mb-4">
+        <!-- Total Revenue Card -->
+        <div class="col-md-6 col-lg-3 mb-4">
+            <div class="card h-100">
+                <div class="card-body d-flex justify-content-between">
                     <div>
-                        <p class="text-[#49739c] text-sm font-medium">Total Revenue</p>
-                        <p class="text-[#0d141c] text-2xl font-bold">${{ total_revenue|floatformat:0|default:"0" }}</p>
-                        <p class="text-green-600 text-sm font-medium">+12% from last month</p>
+                        <h6 class="card-subtitle text-muted mb-1">Total Revenue</h6>
+                        <h3 class="card-title fw-bold mb-1">${{ total_revenue|floatformat:0|default:"0" }}</h3>
+                        <p class="card-text text-success">+12% from last month</p>
                     </div>
-                    <div class="bg-green-100 p-3 rounded-full">
-                        <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
-                        </svg>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Active Properties Card -->
-            <div class="bg-white rounded-lg border border-[#cedbe8] p-6">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-[#49739c] text-sm font-medium">Active Properties</p>
-                        <p class="text-[#0d141c] text-2xl font-bold">{{ total_properties|default:"0" }}</p>
-                        <p class="text-blue-600 text-sm font-medium">{{ occupied_properties|default:"0" }} occupied</p>
-                    </div>
-                    <div class="bg-blue-100 p-3 rounded-full">
-                        <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
-                        </svg>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Outstanding Payments Card -->
-            <div class="bg-white rounded-lg border border-[#cedbe8] p-6">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-[#49739c] text-sm font-medium">Outstanding</p>
-                        <p class="text-[#0d141c] text-2xl font-bold">${{ outstanding_payments|floatformat:0|default:"0" }}</p>
-                        <p class="text-red-600 text-sm font-medium">{{ overdue_count|default:"0" }} overdue</p>
-                    </div>
-                    <div class="bg-red-100 p-3 rounded-full">
-                        <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Active Leases Card -->
-            <div class="bg-white rounded-lg border border-[#cedbe8] p-6">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-[#49739c] text-sm font-medium">Active Leases</p>
-                        <p class="text-[#0d141c] text-2xl font-bold">{{ active_leases|default:"0" }}</p>
-                        <p class="text-yellow-600 text-sm font-medium">{{ expiring_soon|default:"0" }} expiring soon</p>
-                    </div>
-                    <div class="bg-yellow-100 p-3 rounded-full">
-                        <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                        </svg>
+                    <div class="bg-success bg-opacity-10 p-3 rounded-circle d-flex align-items-center justify-content-center">
+                        <i class="bi bi-currency-dollar text-success fs-4"></i>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Charts Section -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 p-4">
-            <!-- Revenue Trend Chart -->
-            <div class="bg-white rounded-lg border border-[#cedbe8] p-6">
-                <div class="flex items-center justify-between mb-4">
-                    <h2 class="text-[#0d141c] text-xl font-bold">Revenue Trend</h2>
-                    <select class="px-3 py-2 bg-[#f8fafc] border border-[#e7edf4] rounded-lg text-sm">
-                        <option>Last 6 months</option>
-                        <option>Last year</option>
-                        <option>All time</option>
-                    </select>
+        <!-- Active Properties Card -->
+        <div class="col-md-6 col-lg-3 mb-4">
+            <div class="card h-100">
+                <div class="card-body d-flex justify-content-between">
+                    <div>
+                        <h6 class="card-subtitle text-muted mb-1">Active Properties</h6>
+                        <h3 class="card-title fw-bold mb-1">{{ total_properties|default:"0" }}</h3>
+                        <p class="card-text text-primary">{{ occupied_properties|default:"0" }} occupied</p>
+                    </div>
+                    <div class="bg-primary bg-opacity-10 p-3 rounded-circle d-flex align-items-center justify-content-center">
+                        <i class="bi bi-building text-primary fs-4"></i>
+                    </div>
                 </div>
-                <canvas id="revenueTrendChart" height="200"></canvas>
-            </div>
-
-            <!-- Payment Status Distribution -->
-            <div class="bg-white rounded-lg border border-[#cedbe8] p-6">
-                <div class="flex items-center justify-between mb-4">
-                    <h2 class="text-[#0d141c] text-xl font-bold">Payment Status</h2>
-                    <span class="text-[#49739c] text-sm">This month</span>
-                </div>
-                <canvas id="paymentStatusChart" height="200"></canvas>
             </div>
         </div>
 
-        <!-- Property Performance and Recent Activity -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 p-4">
-            <!-- Top Performing Properties -->
-            <div class="bg-white rounded-lg border border-[#cedbe8] p-6">
-                <div class="flex items-center justify-between mb-4">
-                    <h2 class="text-[#0d141c] text-xl font-bold">Top Performing Properties</h2>
-                    <a href="{% url 'property-list' %}" class="text-[#2884ef] text-sm font-medium hover:underline">View All</a>
+        <!-- Outstanding Payments Card -->
+        <div class="col-md-6 col-lg-3 mb-4">
+            <div class="card h-100">
+                <div class="card-body d-flex justify-content-between">
+                    <div>
+                        <h6 class="card-subtitle text-muted mb-1">Outstanding</h6>
+                        <h3 class="card-title fw-bold mb-1">${{ outstanding_payments|floatformat:0|default:"0" }}</h3>
+                        <p class="card-text text-danger">{{ overdue_count|default:"0" }} overdue</p>
+                    </div>
+                    <div class="bg-danger bg-opacity-10 p-3 rounded-circle d-flex align-items-center justify-content-center">
+                        <i class="bi bi-exclamation-circle text-danger fs-4"></i>
+                    </div>
                 </div>
-                <div class="space-y-4">
-                    {% for property in top_properties|slice:":5" %}
-                    <div class="flex items-center justify-between p-3 bg-[#f8fafc] rounded-lg">
-                        <div class="flex items-center space-x-3">
-                            <div class="w-10 h-10 bg-[#2884ef] rounded-lg flex items-center justify-center">
-                                <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                    <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"></path>
-                                </svg>
+            </div>
+        </div>
+
+        <!-- Active Leases Card -->
+        <div class="col-md-6 col-lg-3 mb-4">
+            <div class="card h-100">
+                <div class="card-body d-flex justify-content-between">
+                    <div>
+                        <h6 class="card-subtitle text-muted mb-1">Active Leases</h6>
+                        <h3 class="card-title fw-bold mb-1">{{ active_leases|default:"0" }}</h3>
+                        <p class="card-text text-warning">{{ expiring_soon|default:"0" }} expiring soon</p>
+                    </div>
+                    <div class="bg-warning bg-opacity-10 p-3 rounded-circle d-flex align-items-center justify-content-center">
+                        <i class="bi bi-file-text text-warning fs-4"></i>
+                    </div>
+                </div>
+        </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="row mb-4">
+        <!-- Revenue Trend Chart -->
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h5 class="card-title fw-bold">Revenue Trend</h5>
+                        <select class="form-select form-select-sm" style="width: auto;">
+                            <option>Last 6 months</option>
+                            <option>Last year</option>
+                            <option>All time</option>
+                        </select>
+                    </div>
+                    <canvas id="revenueTrendChart" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payment Status Distribution -->
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h5 class="card-title fw-bold">Payment Status</h5>
+                        <span class="text-muted">This month</span>
+                    </div>
+                    <canvas id="paymentStatusChart" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Property Performance and Recent Activity -->
+    <div class="row mb-4">
+        <!-- Top Performing Properties -->
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h5 class="card-title fw-bold">Top Performing Properties</h5>
+                        <a href="{% url 'properties:property_list' %}" class="text-primary">View All</a>
+                    </div>
+                    <div class="d-flex flex-column gap-3">
+                        {% for property in top_properties|slice:":5" %}
+                        <div class="d-flex justify-content-between align-items-center p-3 bg-light rounded">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="bg-primary rounded d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                    <i class="bi bi-house-door text-white"></i>
+                                </div>
+                                <div>
+                                    <p class="mb-0 fw-medium">{{ property.address|truncatechars:30 }}</p>
+                                    <p class="mb-0 text-muted small">{{ property.property_type|title }}</p>
+                                </div>
+                            </div>
+                            <div class="text-end">
+                                <p class="mb-0 fw-bold">${{ property.monthly_revenue|floatformat:0|default:"0" }}</p>
+                                <p class="mb-0 text-success small">+5.2%</p>
+                            </div>
+                        </div>
+                                {% empty %}
+                        <p class="text-muted text-center py-4">No property data available</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h5 class="card-title fw-bold">Recent Activity</h5>
+                        <button class="btn btn-link p-0 text-primary">View All</button>
+                    </div>
+                    <div class="d-flex flex-column gap-3">
+                        {% for activity in recent_activities|slice:":5" %}
+                        <div class="d-flex align-items-start gap-3">
+                            <div class="bg-light rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                                {% if activity.type == 'payment' %}
+                                    <i class="bi bi-credit-card text-primary"></i>
+                                {% elif activity.type == 'lease' %}
+                                    <i class="bi bi-file-text text-primary"></i>
+                                {% else %}
+                                    <i class="bi bi-info-circle text-primary"></i>
+                                {% endif %}
                             </div>
                             <div>
-                                <p class="text-[#0d141c] font-medium">{{ property.address|truncatechars:30 }}</p>
-                                <p class="text-[#49739c] text-sm">{{ property.property_type|title }}</p>
+                                <p class="mb-0 fw-medium">{{ activity.description }}</p>
+                                <p class="mb-0 text-muted small">{{ activity.timestamp|timesince }} ago</p>
                             </div>
                         </div>
-                        <div class="text-right">
-                            <p class="text-[#0d141c] font-bold">${{ property.monthly_revenue|floatformat:0|default:"0" }}</p>
-                            <p class="text-green-600 text-sm">+5.2%</p>
-                        </div>
+                        {% empty %}
+                        <p class="text-muted text-center py-4">No recent activity</p>
+                        {% endfor %}
                     </div>
-                    {% empty %}
-                    <p class="text-[#49739c] text-center py-4">No property data available</p>
-                    {% endfor %}
                 </div>
             </div>
-
-            <!-- Recent Activity -->
-            <div class="bg-white rounded-lg border border-[#cedbe8] p-6">
-                <div class="flex items-center justify-between mb-4">
-                    <h2 class="text-[#0d141c] text-xl font-bold">Recent Activity</h2>
-                    <button class="text-[#2884ef] text-sm font-medium hover:underline">View All</button>
-                </div>
-                <div class="space-y-4">
-                    {% for activity in recent_activities|slice:":5" %}
-                    <div class="flex items-start space-x-3">
-                        <div class="w-8 h-8 bg-[#e7edf4] rounded-full flex items-center justify-center flex-shrink-0">
-                            {% if activity.type == 'payment' %}
-                                <svg class="w-4 h-4 text-[#2884ef]" fill="currentColor" viewBox="0 0 20 20">
-                                    <path d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z"></path>
-                                </svg>
-                            {% elif activity.type == 'lease' %}
-                                <svg class="w-4 h-4 text-[#2884ef]" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"></path>
-                                </svg>
-                            {% else %}
-                                <svg class="w-4 h-4 text-[#2884ef]" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
-                                </svg>
-                            {% endif %}
-                        </div>
-                        <div class="flex-1 min-w-0">
-                            <p class="text-[#0d141c] text-sm font-medium">{{ activity.description }}</p>
-                            <p class="text-[#49739c] text-xs">{{ activity.timestamp|timesince }} ago</p>
-                        </div>
-                    </div>
-                    {% empty %}
-                    <p class="text-[#49739c] text-center py-4">No recent activity</p>
-                    {% endfor %}
-                </div>
-            </div>
+        </div>
         </div>
 
         <!-- Quick Actions -->
-        <div class="p-4">
-            <div class="bg-white rounded-lg border border-[#cedbe8] p-6">
-                <h2 class="text-[#0d141c] text-xl font-bold mb-4">Quick Actions</h2>
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <a href="{% url 'property-create' %}" class="flex flex-col items-center p-4 bg-[#f8fafc] rounded-lg hover:bg-[#e7edf4] transition-colors">
-                        <div class="w-12 h-12 bg-[#2884ef] rounded-lg flex items-center justify-center mb-2">
-                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                            </svg>
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title fw-bold mb-4">Quick Actions</h5>
+                        <div class="row row-cols-2 row-cols-md-4 g-4">
+                            <div class="col">
+                                <a href="{% url 'properties:property_add' %}" class="text-decoration-none">
+                                    <div class="d-flex flex-column align-items-center p-3 bg-light rounded text-center h-100">
+                                        <div class="bg-primary rounded d-flex align-items-center justify-content-center mb-3" style="width: 48px; height: 48px;">
+                                            <i class="bi bi-plus-lg text-white"></i>
+                                        </div>
+                                        <span class="fw-medium">Add Property</span>
+                                    </div>
+                                </a>
+                            </div>
+                            
+                            <div class="col">
+                                <a href="{% url 'tenants:tenant_add' %}" class="text-decoration-none">
+                                    <div class="d-flex flex-column align-items-center p-3 bg-light rounded text-center h-100">
+                                        <div class="bg-primary rounded d-flex align-items-center justify-content-center mb-3" style="width: 48px; height: 48px;">
+                                            <i class="bi bi-person-plus text-white"></i>
+                                        </div>
+                                        <span class="fw-medium">Add Tenant</span>
+                                    </div>
+                                </a>
+                            </div>
+                            
+                            <div class="col">
+                                <a href="{% url 'leases:lease_add' %}" class="text-decoration-none">
+                                    <div class="d-flex flex-column align-items-center p-3 bg-light rounded text-center h-100">
+                                        <div class="bg-primary rounded d-flex align-items-center justify-content-center mb-3" style="width: 48px; height: 48px;">
+                                            <i class="bi bi-file-earmark-text text-white"></i>
+                                        </div>
+                                        <span class="fw-medium">Create Lease</span>
+                                    </div>
+                                </a>
+                            </div>
+                            
+                            <div class="col">
+                                <a href="{% url 'payments:payment_add' %}" class="text-decoration-none">
+                                    <div class="d-flex flex-column align-items-center p-3 bg-light rounded text-center h-100">
+                                        <div class="bg-primary rounded d-flex align-items-center justify-content-center mb-3" style="width: 48px; height: 48px;">
+                                            <i class="bi bi-cash text-white"></i>
+                                        </div>
+                                        <span class="fw-medium">Record Payment</span>
+                                    </div>
+                                </a>
+                            </div>
                         </div>
-                        <span class="text-[#0d141c] text-sm font-medium">Add Property</span>
-                    </a>
-                    
-                    <a href="{% url 'tenant-create' %}" class="flex flex-col items-center p-4 bg-[#f8fafc] rounded-lg hover:bg-[#e7edf4] transition-colors">
-                        <div class="w-12 h-12 bg-[#2884ef] rounded-lg flex items-center justify-center mb-2">
-                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-                            </svg>
-                        </div>
-                        <span class="text-[#0d141c] text-sm font-medium">Add Tenant</span>
-                    </a>
-                    
-                    <a href="{% url 'lease-create' %}" class="flex flex-col items-center p-4 bg-[#f8fafc] rounded-lg hover:bg-[#e7edf4] transition-colors">
-                        <div class="w-12 h-12 bg-[#2884ef] rounded-lg flex items-center justify-center mb-2">
-                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                            </svg>
-                        </div>
-                        <span class="text-[#0d141c] text-sm font-medium">Create Lease</span>
-                    </a>
-                    
-                    <a href="{% url 'payment-create' %}" class="flex flex-col items-center p-4 bg-[#f8fafc] rounded-lg hover:bg-[#e7edf4] transition-colors">
-                        <div class="w-12 h-12 bg-[#2884ef] rounded-lg flex items-center justify-center mb-2">
-                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path>
-                            </svg>
-                        </div>
-                        <span class="text-[#0d141c] text-sm font-medium">Record Payment</span>
-                    </a>
+                    </div>
                 </div>
             </div>
         </div>

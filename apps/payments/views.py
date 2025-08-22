@@ -78,7 +78,7 @@ class PaymentCreateView(LoginRequiredMixin, CreateView):
     model = Payment
     template_name = 'payment_form.html'
     fields = ['lease', 'amount', 'payment_date', 'due_date', 'payment_type', 'payment_method', 'status']
-    success_url = reverse_lazy('payment_list')
+    success_url = reverse_lazy('payments:payment_list')
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -109,7 +109,7 @@ class PaymentUpdateView(LoginRequiredMixin, UpdateView):
         return context
     
     def get_success_url(self):
-        return reverse_lazy('payment_detail', kwargs={'pk': self.object.pk})
+        return reverse_lazy('payments:payment_detail', kwargs={'pk': self.object.pk})
     
     def form_valid(self, form):
         messages.success(self.request, 'Payment updated successfully!')

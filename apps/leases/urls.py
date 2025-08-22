@@ -7,13 +7,15 @@ from .api_views import LeaseViewSet
 router = DefaultRouter()
 router.register(r'api/leases', LeaseViewSet)
 
+app_name = 'leases'
+
 urlpatterns = [
     # API endpoints
     path('', include(router.urls)),
     
     # Template-based views
-    path('leases/', views.LeaseListView.as_view(), name='lease_list'),
-    path('leases/<int:pk>/', views.LeaseDetailView.as_view(), name='lease_detail'),
-    path('leases/add/', views.LeaseCreateView.as_view(), name='lease_add'),
-    path('leases/<int:pk>/edit/', views.LeaseUpdateView.as_view(), name='lease_edit'),
+    path('', views.LeaseListView.as_view(), name='lease_list'),
+    path('<int:pk>/', views.LeaseDetailView.as_view(), name='lease_detail'),
+    path('add/', views.LeaseCreateView.as_view(), name='lease_add'),
+    path('<int:pk>/edit/', views.LeaseUpdateView.as_view(), name='lease_edit'),
 ]

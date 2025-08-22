@@ -1,0 +1,220 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{% if form.instance.pk %}Edit Payment{% else %}Add Payment{% endif %}{% endblock %}
+
+{% block page_title %}{% if form.instance.pk %}Edit Payment #{{ form.instance.payment_id }}{% else %}Add New Payment{% endif %}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">{% if form.instance.pk %}Edit Payment Details{% else %}Payment Information{% endif %}</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {% for error in form.non_field_errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    
+                    <div class="row g-3">
+                        <div class="col-md-12">
+                            <label for="{{ form.lease.id_for_label }}" class="form-label">Lease <span class="text-danger">*</span></label>
+                            {{ form.lease }}
+                            {% if form.lease.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.lease.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">Select the lease this payment is associated with</div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label for="{{ form.amount.id_for_label }}" class="form-label">Amount <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                {{ form.amount }}
+                            </div>
+                            {% if form.amount.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.amount.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label for="{{ form.payment_type.id_for_label }}" class="form-label">Payment Type <span class="text-danger">*</span></label>
+                            {{ form.payment_type }}
+                            {% if form.payment_type.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.payment_type.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label for="{{ form.due_date.id_for_label }}" class="form-label">Due Date <span class="text-danger">*</span></label>
+                            {{ form.due_date }}
+                            {% if form.due_date.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.due_date.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label for="{{ form.payment_date.id_for_label }}" class="form-label">Payment Date</label>
+                            {{ form.payment_date }}
+                            {% if form.payment_date.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.payment_date.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">Leave blank if payment hasn't been made yet</div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label for="{{ form.payment_method.id_for_label }}" class="form-label">Payment Method</label>
+                            {{ form.payment_method }}
+                            {% if form.payment_method.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.payment_method.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">Required only if payment has been made</div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label for="{{ form.status.id_for_label }}" class="form-label">Status <span class="text-danger">*</span></label>
+                            {{ form.status }}
+                            {% if form.status.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.status.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-primary">
+                            {% if form.instance.pk %}
+                                <i class="fas fa-save me-1"></i> Update Payment
+                            {% else %}
+                                <i class="fas fa-plus me-1"></i> Create Payment
+                            {% endif %}
+                        </button>
+                        <a href="{% url 'payments:payment_list' %}" class="btn btn-outline-secondary ms-2">
+                            <i class="fas fa-times me-1"></i> Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Payment Guidelines</h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <h6 class="alert-heading"><i class="fas fa-info-circle me-2"></i>Important Information</h6>
+                    <hr>
+                    <ul class="mb-0">
+                        <li>All payments must be associated with an active lease</li>
+                        <li>Payment amount should match the monthly rent in the lease</li>
+                        <li>Due date is typically set to the 1st of each month</li>
+                        <li>Mark status as "Paid" only when payment is confirmed</li>
+                        <li>Payment method is required when status is "Paid"</li>
+                    </ul>
+                </div>
+                
+                <div class="mt-3">
+                    <h6>Payment Status</h6>
+                    <ul class="list-unstyled">
+                        <li><span class="badge bg-success me-2">Paid</span> Payment has been received and confirmed</li>
+                        <li class="mt-2"><span class="badge bg-warning me-2">Pending</span> Payment is expected but not yet received</li>
+                        <li class="mt-2"><span class="badge bg-danger me-2">Overdue</span> Payment is past the due date</li>
+                    </ul>
+                </div>
+                
+                <div class="mt-3">
+                    <h6>Payment Types</h6>
+                    <ul class="list-unstyled">
+                        <li><strong>Rent:</strong> Regular monthly rent payment</li>
+                        <li><strong>Deposit:</strong> Security deposit payment</li>
+                        <li><strong>Late Fee:</strong> Additional fee for late payments</li>
+                        <li><strong>Utility:</strong> Payment for utilities</li>
+                        <li><strong>Maintenance:</strong> Payment for maintenance services</li>
+                        <li><strong>Other:</strong> Any other type of payment</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add date picker to date fields
+        const dateInputs = document.querySelectorAll('input[type="date"]');
+        dateInputs.forEach(input => {
+            if (!input.value) {
+                // Set default value for due_date to first day of next month if it's a new payment
+                if (input.id.includes('due_date') && !document.querySelector('form').dataset.edit) {
+                    const today = new Date();
+                    const nextMonth = new Date(today.getFullYear(), today.getMonth() + 1, 1);
+                    const formattedDate = nextMonth.toISOString().split('T')[0];
+                    input.value = formattedDate;
+                }
+            }
+        });
+        
+        // Show/hide payment method based on status
+        const statusSelect = document.querySelector('#id_status');
+        const paymentMethodField = document.querySelector('#id_payment_method').closest('.col-md-6');
+        const paymentDateField = document.querySelector('#id_payment_date').closest('.col-md-6');
+        
+        function updateFieldVisibility() {
+            if (statusSelect.value === 'paid') {
+                paymentMethodField.classList.remove('d-none');
+                paymentDateField.classList.remove('d-none');
+                // Set payment date to today if empty and status is paid
+                const paymentDateInput = document.querySelector('#id_payment_date');
+                if (!paymentDateInput.value) {
+                    const today = new Date().toISOString().split('T')[0];
+                    paymentDateInput.value = today;
+                }
+            } else {
+                // Don't hide, but make optional
+                document.querySelector('#id_payment_date').value = '';
+            }
+        }
+        
+        statusSelect.addEventListener('change', updateFieldVisibility);
+        updateFieldVisibility(); // Run on page load
+    });
+</script>
+{% endblock %}

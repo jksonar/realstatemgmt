@@ -1,0 +1,391 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Maintenance Request Details{% endblock %}
+
+{% block page_title %}Maintenance Request Details{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Request #{{ maintenance.maintenance_id }}</h5>
+                <div>
+                    <a href="{% url 'maintenance:maintenance_edit' maintenance.pk %}" class="btn btn-sm btn-warning">
+                        <i class="fas fa-edit me-1"></i> Edit
+                    </a>
+                    <a href="{% url 'maintenance:maintenance_list' %}" class="btn btn-sm btn-secondary">
+                        <i class="fas fa-arrow-left me-1"></i> Back
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="text-muted mb-3">Request Information</h6>
+                        <div class="mb-3">
+                            <label class="form-label text-muted small">Status</label>
+                            <p class="mb-0">
+                                <span class="badge {% if maintenance.status == 'open' %}bg-primary{% elif maintenance.status == 'in_progress' %}bg-warning{% elif maintenance.status == 'completed' %}bg-success{% else %}bg-secondary{% endif %}">
+                                    {{ maintenance.status|title }}
+                                </span>
+                            </p>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-muted small">Priority</label>
+                            <p class="mb-0">
+                                <span class="badge {% if maintenance.priority == 'urgent' %}bg-danger{% elif maintenance.priority == 'high' %}bg-warning{% elif maintenance.priority == 'medium' %}bg-info{% else %}bg-secondary{% endif %}">
+                                    {{ maintenance.priority|title }}
+                                </span>
+                            </p>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-muted small">Category</label>
+                            <p class="mb-0 fw-medium">{{ maintenance.category|title }}</p>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-muted small">Reported By</label>
+                            <p class="mb-0 fw-medium">
+                                {% if maintenance.tenant %}
+                                <a href="{% url 'tenants:tenant_detail' maintenance.tenant.pk %}" class="text-decoration-none">
+                                    {{ maintenance.tenant.first_name }} {{ maintenance.tenant.last_name }}
+                                </a>
+                                {% else %}
+                                <span>Staff</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-muted mb-3">Dates</h6>
+                        <div class="mb-3">
+                            <label class="form-label text-muted small">Date Reported</label>
+                            <p class="mb-0 fw-medium">{{ maintenance.created_at|date:"F d, Y" }}</p>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-muted small">Last Updated</label>
+                            <p class="mb-0 fw-medium">{{ maintenance.updated_at|date:"F d, Y" }}</p>
+                        </div>
+                        {% if maintenance.scheduled_date %}
+                        <div class="mb-3">
+                            <label class="form-label text-muted small">Scheduled Date</label>
+                            <p class="mb-0 fw-medium">{{ maintenance.scheduled_date|date:"F d, Y" }}</p>
+                        </div>
+                        {% endif %}
+                        {% if maintenance.completed_date %}
+                        <div class="mb-3">
+                            <label class="form-label text-muted small">Completed Date</label>
+                            <p class="mb-0 fw-medium">{{ maintenance.completed_date|date:"F d, Y" }}</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <hr>
+                
+                <div class="mb-4">
+                    <h6 class="text-muted mb-3">Issue Description</h6>
+                    <div class="p-3 bg-light rounded">
+                        {{ maintenance.issue_description|linebreaks }}
+                    </div>
+                </div>
+                
+                {% if maintenance.photos.exists %}
+                <div class="mb-4">
+                    <h6 class="text-muted mb-3">Photos</h6>
+                    <div class="row g-3">
+                        {% for photo in maintenance.photos.all %}
+                        <div class="col-md-4">
+                            <a href="{{ photo.image.url }}" target="_blank" class="d-block">
+                                <img src="{{ photo.image.url }}" alt="Maintenance Photo" class="img-fluid rounded shadow-sm" style="object-fit: cover; height: 150px; width: 100%;">
+                            </a>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+                
+                {% if maintenance.notes %}
+                <div class="mb-4">
+                    <h6 class="text-muted mb-3">Additional Notes</h6>
+                    <div class="p-3 bg-light rounded">
+                        {{ maintenance.notes|linebreaks }}
+                    </div>
+                </div>
+                {% endif %}
+                
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0">Property Information</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="d-flex align-items-center mb-3">
+                                    {% if maintenance.property.image %}
+                                        <img src="{{ maintenance.property.image.url }}" alt="Property" class="rounded me-3" style="width: 60px; height: 60px; object-fit: cover;">
+                                    {% else %}
+                                        <div class="rounded me-3 bg-light d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                                            <i class="fas fa-home fa-2x text-muted"></i>
+                                        </div>
+                                    {% endif %}
+                                    <div>
+                                        <h6 class="mb-1">{{ maintenance.property.address }}</h6>
+                                        <p class="small text-muted mb-0">{{ maintenance.property.city }}</p>
+                                    </div>
+                                </div>
+                                <div class="mb-2">
+                                    <label class="form-label text-muted small">Property Type</label>
+                                    <p class="mb-0">{{ maintenance.property.property_type }}</p>
+                                </div>
+                                <div class="mb-0">
+                                    <a href="{% url 'properties:property_detail' maintenance.property.pk %}" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-external-link-alt me-1"></i> View Property
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% if maintenance.vendor %}
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0">Vendor Information</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="rounded-circle me-3 bg-primary bg-opacity-10 d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                                        <i class="fas fa-user-tie fa-2x text-primary"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-1">{{ maintenance.vendor.name }}</h6>
+                                        <p class="small text-muted mb-0">{{ maintenance.vendor.email }}</p>
+                                    </div>
+                                </div>
+                                <div class="mb-2">
+                                    <label class="form-label text-muted small">Phone</label>
+                                    <p class="mb-0">{{ maintenance.vendor.phone }}</p>
+                                </div>
+                                <div class="mb-2">
+                                    <label class="form-label text-muted small">Specialty</label>
+                                    <p class="mb-0">{{ maintenance.vendor.specialty }}</p>
+                                </div>
+                                <div class="mb-0">
+                                    <a href="{% url 'maintenance:vendor_detail' maintenance.vendor.pk %}" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-external-link-alt me-1"></i> View Vendor
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        {% if maintenance.updates.exists %}
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Maintenance Updates</h5>
+            </div>
+            <div class="card-body">
+                <div class="timeline">
+                    {% for update in maintenance.updates.all %}
+                    <div class="timeline-item">
+                        <div class="timeline-marker {% if update.status == 'completed' %}bg-success{% elif update.status == 'in_progress' %}bg-warning{% else %}bg-primary{% endif %}"></div>
+                        <div class="timeline-content">
+                            <h6 class="mb-1">{{ update.status|title }}</h6>
+                            <p class="text-muted small mb-2">{{ update.created_at|date:"F d, Y h:i A" }}</p>
+                            {% if update.notes %}
+                            <div class="p-3 bg-light rounded mb-3">
+                                {{ update.notes|linebreaks }}
+                            </div>
+                            {% endif %}
+                            <p class="small mb-0">Updated by: {{ update.created_by.get_full_name|default:update.created_by.username }}</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="list-group">
+                    <a href="{% url 'maintenance:maintenance_edit' maintenance.pk %}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="fas fa-edit me-2 text-warning"></i> Edit Request
+                        </div>
+                        <i class="fas fa-chevron-right text-muted"></i>
+                    </a>
+                    
+                    {% if maintenance.status != 'completed' %}
+                    <a href="{% url 'maintenance:maintenance_update_status' maintenance.pk %}?status=completed" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="fas fa-check-circle me-2 text-success"></i> Mark as Completed
+                        </div>
+                        <i class="fas fa-chevron-right text-muted"></i>
+                    </a>
+                    {% endif %}
+                    
+                    {% if maintenance.status == 'open' %}
+                    <a href="{% url 'maintenance:maintenance_update_status' maintenance.pk %}?status=in_progress" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="fas fa-hammer me-2 text-warning"></i> Mark as In Progress
+                        </div>
+                        <i class="fas fa-chevron-right text-muted"></i>
+                    </a>
+                    {% endif %}
+                    
+                    <a href="{% url 'maintenance:maintenance_add_update' maintenance.pk %}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="fas fa-comment-alt me-2 text-primary"></i> Add Update
+                        </div>
+                        <i class="fas fa-chevron-right text-muted"></i>
+                    </a>
+                    
+                    <a href="{% url 'maintenance:maintenance_assign' maintenance.pk %}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="fas fa-user-plus me-2 text-primary"></i> Assign Vendor
+                        </div>
+                        <i class="fas fa-chevron-right text-muted"></i>
+                    </a>
+                    
+                    <a href="{% url 'maintenance:maintenance_add_photo' maintenance.pk %}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="fas fa-camera me-2 text-info"></i> Add Photos
+                        </div>
+                        <i class="fas fa-chevron-right text-muted"></i>
+                    </a>
+                    
+                    <a href="{% url 'maintenance:maintenance_print' maintenance.pk %}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="fas fa-print me-2 text-secondary"></i> Print Request
+                        </div>
+                        <i class="fas fa-chevron-right text-muted"></i>
+                    </a>
+                    
+                    <a href="{% url 'maintenance:maintenance_delete' maintenance.pk %}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center text-danger">
+                        <div>
+                            <i class="fas fa-trash-alt me-2"></i> Delete Request
+                        </div>
+                        <i class="fas fa-chevron-right text-muted"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        {% if maintenance.tenant %}
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Tenant Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="rounded-circle me-3 bg-primary bg-opacity-10 d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                        <i class="fas fa-user fa-2x text-primary"></i>
+                    </div>
+                    <div>
+                        <h6 class="mb-1">{{ maintenance.tenant.first_name }} {{ maintenance.tenant.last_name }}</h6>
+                        <p class="small text-muted mb-0">{{ maintenance.tenant.email }}</p>
+                    </div>
+                </div>
+                <div class="mb-2">
+                    <label class="form-label text-muted small">Phone</label>
+                    <p class="mb-0">{{ maintenance.tenant.phone }}</p>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label text-muted small">Address</label>
+                    <p class="mb-0">{{ maintenance.tenant.address }}</p>
+                </div>
+                <div class="mb-0">
+                    <a href="{% url 'tenants:tenant_detail' maintenance.tenant.pk %}" class="btn btn-outline-primary">
+                        <i class="fas fa-external-link-alt me-1"></i> View Tenant
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Cost Information</h5>
+            </div>
+            <div class="card-body">
+                {% if maintenance.cost %}
+                <div class="mb-3">
+                    <label class="form-label text-muted small">Total Cost</label>
+                    <p class="mb-0 fw-bold">${{ maintenance.cost }}</p>
+                </div>
+                {% if maintenance.cost_details %}
+                <div class="mb-3">
+                    <label class="form-label text-muted small">Cost Details</label>
+                    <div class="p-3 bg-light rounded">
+                        {{ maintenance.cost_details|linebreaks }}
+                    </div>
+                </div>
+                {% endif %}
+                {% else %}
+                <div class="text-center py-3">
+                    <i class="fas fa-dollar-sign fa-2x text-muted mb-3"></i>
+                    <p class="mb-3">No cost information has been added yet.</p>
+                    <a href="{% url 'maintenance:maintenance_add_cost' maintenance.pk %}" class="btn btn-outline-primary">
+                        <i class="fas fa-plus me-1"></i> Add Cost Information
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .timeline {
+        position: relative;
+        padding-left: 30px;
+    }
+    
+    .timeline:before {
+        content: '';
+        position: absolute;
+        left: 10px;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: #e9ecef;
+    }
+    
+    .timeline-item {
+        position: relative;
+        margin-bottom: 25px;
+    }
+    
+    .timeline-marker {
+        position: absolute;
+        left: -30px;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        border: 3px solid #fff;
+        box-shadow: 0 0 0 2px #e9ecef;
+    }
+    
+    .timeline-content {
+        padding-bottom: 15px;
+        border-bottom: 1px solid #e9ecef;
+    }
+    
+    .timeline-item:last-child .timeline-content {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+</style>
+{% endblock %}

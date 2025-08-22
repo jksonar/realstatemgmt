@@ -7,6 +7,8 @@ from .api_views import MaintenanceRequestViewSet
 router = DefaultRouter()
 router.register(r'api/maintenance', MaintenanceRequestViewSet)
 
+app_name = 'maintenance'
+
 urlpatterns = [
     # API endpoints
     path('', include(router.urls)),
@@ -14,6 +16,6 @@ urlpatterns = [
     # Template-based views
     path('maintenance/', views.MaintenanceListView.as_view(), name='maintenance_list'),
     path('maintenance/<int:pk>/', views.MaintenanceDetailView.as_view(), name='maintenance_detail'),
-    path('maintenance/add/', views.MaintenanceCreateView.as_view(), name='maintenance_add'),
+    path('maintenance/add/', views.MaintenanceCreateView.as_view(), name='maintenance_create'),
     path('maintenance/<int:pk>/edit/', views.MaintenanceUpdateView.as_view(), name='maintenance_edit'),
 ]

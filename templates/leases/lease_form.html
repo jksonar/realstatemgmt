@@ -1,0 +1,191 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{% if form.instance.pk %}Edit Lease{% else %}Add Lease{% endif %}{% endblock %}
+
+{% block page_title %}{% if form.instance.pk %}Edit Lease{% else %}Add Lease{% endif %}{% endblock %}
+
+{% block content %}
+<div class="card shadow-sm">
+    <div class="card-header bg-white">
+        <h5 class="mb-0">{% if form.instance.pk %}Edit Lease Details{% else %}New Lease Agreement{% endif %}</h5>
+    </div>
+    <div class="card-body">
+        <form method="post" class="needs-validation" novalidate>
+            {% csrf_token %}
+            
+            {% if form.errors %}
+                <div class="alert alert-danger">
+                    <h6 class="alert-heading">Please correct the following errors:</h6>
+                    <ul class="mb-0">
+                        {% for field, errors in form.errors.items %}
+                            {% for error in errors %}
+                                <li>{{ field|title }}: {{ error }}</li>
+                            {% endfor %}
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+            
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <h6 class="mb-3">Property & Tenant</h6>
+                    
+                    <div class="mb-3">
+                        <label for="id_property" class="form-label">Property</label>
+                        <select name="property" id="id_property" class="form-select {% if form.property.errors %}is-invalid{% endif %}" required>
+                            <option value="">Select Property</option>
+                            {% for property_item in properties %}
+                                <option value="{{ property_item.id }}" {% if form.property.value|add:"0" == property_item.id %}selected{% endif %}>
+                                    {{ property_item.address }} ({{ property_item.property_id }})
+                                </option>
+                            {% endfor %}
+                        </select>
+                        {% if form.property.errors %}
+                            <div class="invalid-feedback">{{ form.property.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="id_tenant" class="form-label">Tenant</label>
+                        <select name="tenant" id="id_tenant" class="form-select {% if form.tenant.errors %}is-invalid{% endif %}" required>
+                            <option value="">Select Tenant</option>
+                            {% for tenant_item in tenants %}
+                                <option value="{{ tenant_item.id }}" {% if form.tenant.value|add:"0" == tenant_item.id %}selected{% endif %}>
+                                    {{ tenant_item.first_name }} {{ tenant_item.last_name }} ({{ tenant_item.tenant_id }})
+                                </option>
+                            {% endfor %}
+                        </select>
+                        {% if form.tenant.errors %}
+                            <div class="invalid-feedback">{{ form.tenant.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="id_status" class="form-label">Status</label>
+                        <select name="status" id="id_status" class="form-select {% if form.status.errors %}is-invalid{% endif %}" required>
+                            <option value="">Select Status</option>
+                            <option value="active" {% if form.status.value == 'active' %}selected{% endif %}>Active</option>
+                            <option value="expired" {% if form.status.value == 'expired' %}selected{% endif %}>Expired</option>
+                            <option value="terminated" {% if form.status.value == 'terminated' %}selected{% endif %}>Terminated</option>
+                        </select>
+                        {% if form.status.errors %}
+                            <div class="invalid-feedback">{{ form.status.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <h6 class="mb-3">Lease Terms</h6>
+                    
+                    <div class="mb-3">
+                        <label for="id_start_date" class="form-label">Start Date</label>
+                        <input type="date" name="start_date" id="id_start_date" class="form-control {% if form.start_date.errors %}is-invalid{% endif %}" value="{{ form.start_date.value|date:'Y-m-d' }}" required>
+                        {% if form.start_date.errors %}
+                            <div class="invalid-feedback">{{ form.start_date.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="id_end_date" class="form-label">End Date</label>
+                        <input type="date" name="end_date" id="id_end_date" class="form-control {% if form.end_date.errors %}is-invalid{% endif %}" value="{{ form.end_date.value|date:'Y-m-d' }}" required>
+                        {% if form.end_date.errors %}
+                            <div class="invalid-feedback">{{ form.end_date.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="id_monthly_rent" class="form-label">Monthly Rent ($)</label>
+                        <input type="number" name="monthly_rent" id="id_monthly_rent" class="form-control {% if form.monthly_rent.errors %}is-invalid{% endif %}" value="{{ form.monthly_rent.value|default:'' }}" step="0.01" min="0" required>
+                        {% if form.monthly_rent.errors %}
+                            <div class="invalid-feedback">{{ form.monthly_rent.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="id_security_deposit" class="form-label">Security Deposit ($)</label>
+                        <input type="number" name="security_deposit" id="id_security_deposit" class="form-control {% if form.security_deposit.errors %}is-invalid{% endif %}" value="{{ form.security_deposit.value|default:'' }}" step="0.01" min="0" required>
+                        {% if form.security_deposit.errors %}
+                            <div class="invalid-feedback">{{ form.security_deposit.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                {% if not form.instance.pk %}
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="id_lease_id" class="form-label">Lease ID</label>
+                        <input type="text" name="lease_id" id="id_lease_id" class="form-control {% if form.lease_id.errors %}is-invalid{% endif %}" value="{{ form.lease_id.value|default:'' }}" {% if not form.lease_id.value %}readonly{% endif %}>
+                        <div class="form-text">Auto-generated if left blank</div>
+                        {% if form.lease_id.errors %}
+                            <div class="invalid-feedback">{{ form.lease_id.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="mt-4 d-flex justify-content-between">
+                <a href="{% if form.instance.pk %}{% url 'leases:lease_detail' form.instance.pk %}{% else %}{% url 'leases:lease_list' %}{% endif %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-times me-1"></i> Cancel
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save me-1"></i> {% if form.instance.pk %}Update Lease{% else %}Create Lease{% endif %}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Form validation
+    (function() {
+        'use strict';
+        
+        const forms = document.querySelectorAll('.needs-validation');
+        
+        Array.from(forms).forEach(form => {
+            form.addEventListener('submit', event => {
+                if (!form.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                
+                form.classList.add('was-validated');
+            }, false);
+        });
+        
+        // Date validation
+        const startDateInput = document.getElementById('id_start_date');
+        const endDateInput = document.getElementById('id_end_date');
+        
+        if (startDateInput && endDateInput) {
+            endDateInput.addEventListener('change', function() {
+                const startDate = new Date(startDateInput.value);
+                const endDate = new Date(endDateInput.value);
+                
+                if (endDate <= startDate) {
+                    endDateInput.setCustomValidity('End date must be after start date');
+                } else {
+                    endDateInput.setCustomValidity('');
+                }
+            });
+            
+            startDateInput.addEventListener('change', function() {
+                if (endDateInput.value) {
+                    const startDate = new Date(startDateInput.value);
+                    const endDate = new Date(endDateInput.value);
+                    
+                    if (endDate <= startDate) {
+                        endDateInput.setCustomValidity('End date must be after start date');
+                    } else {
+                        endDateInput.setCustomValidity('');
+                    }
+                }
+            });
+        }
+    })();
+</script>
+{% endblock %}

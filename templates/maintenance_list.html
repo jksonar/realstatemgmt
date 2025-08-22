@@ -8,7 +8,7 @@
     <!-- Breadcrumb -->
     <nav aria-label="breadcrumb" class="mb-4">
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'dashboard:dashboard' %}">Dashboard</a></li>
             <li class="breadcrumb-item active" aria-current="page">Maintenance Requests</li>
         </ol>
     </nav>
@@ -16,7 +16,7 @@
     <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="h3 mb-0">Maintenance Requests</h1>
-        <a href="{% url 'maintenance_create' %}" class="btn btn-primary">
+        <a href="{% url 'maintenance:maintenance_create' %}" class="btn btn-primary">
             <i class="fas fa-plus me-2"></i>Add Request
         </a>
     </div>
@@ -103,7 +103,7 @@
                         {% for request in maintenance_requests %}
                         <tr>
                             <td>
-                                <a href="{% url 'maintenance_detail' request.id %}" class="text-decoration-none">
+                                <a href="{% url 'maintenance:maintenance_detail' request.id %}" class="text-decoration-none">
                                     {{ request.request_id }}
                                 </a>
                             </td>
@@ -169,10 +169,10 @@
                                         Actions
                                     </button>
                                     <ul class="dropdown-menu">
-                                        <li><a class="dropdown-item" href="{% url 'maintenance_detail' request.id %}">
+                                        <li><a class="dropdown-item" href="{% url 'maintenance:maintenance_detail' request.id %}">
                                             <i class="fas fa-eye me-2"></i>View Details
                                         </a></li>
-                                        <li><a class="dropdown-item" href="{% url 'maintenance_edit' request.id %}">
+                                        <li><a class="dropdown-item" href="{% url 'maintenance:maintenance_edit' request.id %}">
                                             <i class="fas fa-edit me-2"></i>Edit
                                         </a></li>
                                         {% if request.status != 'completed' %}
@@ -194,7 +194,7 @@
                                 <div class="text-muted">
                                     <i class="fas fa-tools fa-3x mb-3"></i>
                                     <p>No maintenance requests found.</p>
-                                    <a href="{% url 'maintenance_create' %}" class="btn btn-primary">Add First Request</a>
+                                    <a href="{% url 'maintenance:maintenance_create' %}" class="btn btn-primary">Add First Request</a>
                                 </div>
                             </td>
                         </tr>

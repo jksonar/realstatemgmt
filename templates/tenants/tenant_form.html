@@ -1,0 +1,146 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{% if form.instance.pk %}Edit Tenant{% else %}Add Tenant{% endif %}{% endblock %}
+
+{% block page_title %}{% if form.instance.pk %}Edit Tenant{% else %}Add Tenant{% endif %}{% endblock %}
+
+{% block content %}
+<div class="card shadow-sm">
+    <div class="card-header bg-white">
+        <h5 class="mb-0">{% if form.instance.pk %}Edit Tenant Details{% else %}New Tenant Registration{% endif %}</h5>
+    </div>
+    <div class="card-body">
+        <form method="post" class="needs-validation" novalidate>
+            {% csrf_token %}
+            
+            {% if form.errors %}
+                <div class="alert alert-danger">
+                    <h6 class="alert-heading">Please correct the following errors:</h6>
+                    <ul class="mb-0">
+                        {% for field, errors in form.errors.items %}
+                            {% for error in errors %}
+                                <li>{{ field|title }}: {{ error }}</li>
+                            {% endfor %}
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+            
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <h6 class="mb-3">Personal Information</h6>
+                    
+                    <div class="mb-3">
+                        <label for="id_first_name" class="form-label">First Name</label>
+                        <input type="text" name="first_name" id="id_first_name" class="form-control {% if form.first_name.errors %}is-invalid{% endif %}" value="{{ form.first_name.value|default:'' }}" required>
+                        {% if form.first_name.errors %}
+                            <div class="invalid-feedback">{{ form.first_name.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="id_last_name" class="form-label">Last Name</label>
+                        <input type="text" name="last_name" id="id_last_name" class="form-control {% if form.last_name.errors %}is-invalid{% endif %}" value="{{ form.last_name.value|default:'' }}" required>
+                        {% if form.last_name.errors %}
+                            <div class="invalid-feedback">{{ form.last_name.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="id_email" class="form-label">Email Address</label>
+                        <input type="email" name="email" id="id_email" class="form-control {% if form.email.errors %}is-invalid{% endif %}" value="{{ form.email.value|default:'' }}" required>
+                        {% if form.email.errors %}
+                            <div class="invalid-feedback">{{ form.email.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="id_phone" class="form-label">Phone Number</label>
+                        <input type="tel" name="phone" id="id_phone" class="form-control {% if form.phone.errors %}is-invalid{% endif %}" value="{{ form.phone.value|default:'' }}" required>
+                        {% if form.phone.errors %}
+                            <div class="invalid-feedback">{{ form.phone.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <h6 class="mb-3">Additional Information</h6>
+                    
+                    <div class="mb-3">
+                        <label for="id_address" class="form-label">Address</label>
+                        <textarea name="address" id="id_address" class="form-control {% if form.address.errors %}is-invalid{% endif %}" rows="3" required>{{ form.address.value|default:'' }}</textarea>
+                        {% if form.address.errors %}
+                            <div class="invalid-feedback">{{ form.address.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="id_id_proof_type" class="form-label">ID Proof Type</label>
+                        <select name="id_proof_type" id="id_id_proof_type" class="form-select {% if form.id_proof_type.errors %}is-invalid{% endif %}" required>
+                            <option value="" {% if not form.id_proof_type.value %}selected{% endif %}>Select ID Type</option>
+                            <option value="passport" {% if form.id_proof_type.value == 'passport' %}selected{% endif %}>Passport</option>
+                            <option value="driver_license" {% if form.id_proof_type.value == 'driver_license' %}selected{% endif %}>Driver's License</option>
+                            <option value="state_id" {% if form.id_proof_type.value == 'state_id' %}selected{% endif %}>State ID</option>
+                            <option value="social_security" {% if form.id_proof_type.value == 'social_security' %}selected{% endif %}>Social Security</option>
+                        </select>
+                        {% if form.id_proof_type.errors %}
+                            <div class="invalid-feedback">{{ form.id_proof_type.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="id_id_proof_number" class="form-label">ID Proof Number</label>
+                        <input type="text" name="id_proof_number" id="id_id_proof_number" class="form-control {% if form.id_proof_number.errors %}is-invalid{% endif %}" value="{{ form.id_proof_number.value|default:'' }}" required>
+                        {% if form.id_proof_number.errors %}
+                            <div class="invalid-feedback">{{ form.id_proof_number.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    {% if not form.instance.pk %}
+                    <div class="mb-3">
+                        <label for="id_tenant_id" class="form-label">Tenant ID</label>
+                        <input type="text" name="tenant_id" id="id_tenant_id" class="form-control {% if form.tenant_id.errors %}is-invalid{% endif %}" value="{{ form.tenant_id.value|default:'' }}" {% if not form.tenant_id.value %}readonly{% endif %}>
+                        <div class="form-text">Auto-generated if left blank</div>
+                        {% if form.tenant_id.errors %}
+                            <div class="invalid-feedback">{{ form.tenant_id.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="mt-4 d-flex justify-content-between">
+                <a href="{% if form.instance.pk %}{% url 'tenants:tenant_detail' form.instance.pk %}{% else %}{% url 'tenants:tenant_list' %}{% endif %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-times me-1"></i> Cancel
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save me-1"></i> {% if form.instance.pk %}Update Tenant{% else %}Save Tenant{% endif %}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Form validation
+    (function() {
+        'use strict';
+        
+        const forms = document.querySelectorAll('.needs-validation');
+        
+        Array.from(forms).forEach(form => {
+            form.addEventListener('submit', event => {
+                if (!form.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                
+                form.classList.add('was-validated');
+            }, false);
+        });
+    })();
+</script>
+{% endblock %}

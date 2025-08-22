@@ -4,116 +4,118 @@
 {% block title %}Properties - EstateFlow{% endblock %}
 
 {% block content %}
-<div class="px-10 py-8">
-    <div class="max-w-7xl mx-auto">
+<div class="container-fluid py-4">
+    <div class="container-fluid">
         <!-- Header Section -->
-        <div class="flex justify-between items-center mb-8">
+        <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
-                <h1 class="text-[#0d141c] text-3xl font-bold leading-tight tracking-[-0.015em] mb-2">Properties</h1>
-                <p class="text-[#49739c] text-base font-normal leading-normal">Manage your property portfolio</p>
+                <h1 class="fw-bold mb-2">Properties</h1>
+                <p class="text-muted">Manage your property portfolio</p>
             </div>
-            <a href="{% url 'property-create' %}" class="flex min-w-[140px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-6 bg-[#0d80f2] text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-[#0b6fd1] transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16px" height="16px" fill="currentColor" viewBox="0 0 256 256" class="mr-2">
-                    <path d="M224,128a8,8,0,0,1-8,8H136v80a8,8,0,0,1-16,0V136H40a8,8,0,0,1,0-16h80V40a8,8,0,0,1,16,0v80h80A8,8,0,0,1,224,128Z"></path>
-                </svg>
+            <a href="{% url 'properties:property_add' %}" class="btn btn-primary d-flex align-items-center">
+                <i class="bi bi-plus me-2"></i>
                 New Property
             </a>
         </div>
 
         <!-- Filter Section -->
-        <div class="bg-white rounded-xl border border-[#e7edf4] p-6 mb-8 shadow-sm">
-            <h3 class="text-[#0d141c] text-lg font-bold leading-tight tracking-[-0.015em] mb-4">Filter Properties</h3>
-            <form method="get" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div>
-                    <label class="text-[#0d141c] text-sm font-medium leading-normal mb-2 block">City</label>
-                    {{ filter.form.city }}
-                </div>
-                <div>
-                    <label class="text-[#0d141c] text-sm font-medium leading-normal mb-2 block">Area</label>
-                    {{ filter.form.area }}
-                </div>
-                <div>
-                    <label class="text-[#0d141c] text-sm font-medium leading-normal mb-2 block">Property Type</label>
-                    {{ filter.form.property_type }}
-                </div>
-                <div>
-                    <label class="text-[#0d141c] text-sm font-medium leading-normal mb-2 block">Status</label>
-                    {{ filter.form.status }}
-                </div>
-                <div class="md:col-span-2 lg:col-span-4">
-                    <button type="submit" class="flex min-w-[100px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#0d80f2] text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-[#0b6fd1] transition-colors">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16px" height="16px" fill="currentColor" viewBox="0 0 256 256" class="mr-2">
-                            <path d="M229.66,218.34l-50.07-50.06a88.11,88.11,0,1,0-11.31,11.31l50.06,50.07a8,8,0,0,0,11.32-11.32ZM40,112a72,72,0,1,1,72,72A72.08,72.08,0,0,1,40,112Z"></path>
-                        </svg>
-                        Search
-                    </button>
-                </div>
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title fw-bold mb-4">Filter Properties</h5>
+                <form method="get">
+                    <div class="row g-3">
+                        <div class="col-md-6 col-lg-3">
+                            <label class="form-label fw-medium">City</label>
+                            {{ filter.form.city }}
+                        </div>
+                        <div class="col-md-6 col-lg-3">
+                            <label class="form-label fw-medium">Area</label>
+                            {{ filter.form.area }}
+                        </div>
+                        <div class="col-md-6 col-lg-3">
+                            <label class="form-label fw-medium">Property Type</label>
+                            {{ filter.form.property_type }}
+                        </div>
+                        <div class="col-md-6 col-lg-3">
+                            <label class="form-label fw-medium">Status</label>
+                            {{ filter.form.status }}
+                        </div>
+                        <div class="col-12 mt-3">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-search me-2"></i>
+                                Search
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
             </form>
         </div>
 
         <!-- Properties Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
             {% for property in properties %}
-            <div class="bg-white rounded-xl border border-[#e7edf4] shadow-sm hover:shadow-md transition-shadow">
-                <div class="p-6">
-                    <div class="flex justify-between items-start mb-4">
-                        <div class="flex-1">
-                            <h3 class="text-[#0d141c] text-lg font-bold leading-tight tracking-[-0.015em] mb-1">
-                                <a href="{% url 'property-detail' property.pk %}" class="hover:text-[#0d80f2] transition-colors">{{ property.address }}</a>
-                            </h3>
-                            <p class="text-[#49739c] text-sm font-normal leading-normal">{{ property.city }}, {{ property.area }}</p>
-                        </div>
-                        <div class="ml-4">
-                            {% if property.status == 'available' %}
-                                <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">Available</span>
-                            {% elif property.status == 'occupied' %}
-                                <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">Occupied</span>
-                            {% elif property.status == 'maintenance' %}
-                                <span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs font-medium">Maintenance</span>
-                            {% endif %}
-                        </div>
-                    </div>
-                    
-                    <div class="grid grid-cols-2 gap-4 mb-4">
-                        <div>
-                            <p class="text-[#49739c] text-xs font-normal leading-normal mb-1">Type</p>
-                            <p class="text-[#0d141c] text-sm font-medium leading-normal">{{ property.property_type }}</p>
-                        </div>
-                        <div>
-                            <p class="text-[#49739c] text-xs font-normal leading-normal mb-1">Size</p>
-                            <p class="text-[#0d141c] text-sm font-medium leading-normal">{{ property.size_sqft }} sqft</p>
-                        </div>
-                    </div>
-                    
-                    <div class="border-t border-[#e7edf4] pt-4">
-                        <div class="flex justify-between items-center">
+            <div class="col">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
                             <div>
-                                <p class="text-[#49739c] text-xs font-normal leading-normal mb-1">Monthly Rent</p>
-                                <p class="text-[#0d141c] text-lg font-bold leading-tight tracking-[-0.015em]">{{ property.rent_amount|as_currency }}</p>
+                                <h5 class="card-title fw-bold mb-1">
+                                    <a href="{% url 'property-detail' property.pk %}" class="text-decoration-none text-dark">{{ property.address }}</a>
+                                </h5>
+                                <p class="text-muted small">{{ property.city }}, {{ property.area }}</p>
                             </div>
-                            <a href="{% url 'property-detail' property.pk %}" class="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-8 px-3 bg-[#e7edf4] text-[#0d141c] text-sm font-bold leading-normal tracking-[0.015em] hover:bg-[#cedbe8] transition-colors">
+                            <div>
+                                {% if property.status == 'available' %}
+                                    <span class="badge bg-success rounded-pill">Available</span>
+                                {% elif property.status == 'occupied' %}
+                                    <span class="badge bg-primary rounded-pill">Occupied</span>
+                                {% elif property.status == 'maintenance' %}
+                                    <span class="badge bg-warning text-dark rounded-pill">Maintenance</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <p class="text-muted small mb-1">Type</p>
+                                <p class="fw-medium">{{ property.property_type }}</p>
+                            </div>
+                            <div class="col-6">
+                                <p class="text-muted small mb-1">Size</p>
+                                <p class="fw-medium">{{ property.size_sqft }} sqft</p>
+                            </div>
+                        </div>
+                        
+                        <hr>
+                        <div class="d-flex justify-content-between align-items-center pt-2">
+                            <div>
+                                <p class="text-muted small mb-1">Monthly Rent</p>
+                                <p class="fw-bold">{{ property.rent_amount|as_currency }}</p>
+                            </div>
+                            <a href="{% url 'property-detail' property.pk %}" class="btn btn-light btn-sm">
                                 View Details
                             </a>
                         </div>
                     </div>
                 </div>
+                </div>
             </div>
             {% empty %}
-            <div class="col-span-full">
-                <div class="bg-white rounded-xl border border-[#e7edf4] p-12 text-center">
-                    <div class="text-[#49739c] mb-4">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="48px" height="48px" fill="currentColor" viewBox="0 0 256 256" class="mx-auto">
-                            <path d="M240,208H224V136l2.34,2.34A8,8,0,0,0,237.66,127L139.31,28.68a16,16,0,0,0-22.62,0L18.34,127a8,8,0,0,0,11.32,11.31L32,136v72H16a8,8,0,0,0,0,16H240a8,8,0,0,0,0-16ZM48,136l80-80,80,80v72H48Z"></path>
-                        </svg>
+            <div class="col-12">
+                <div class="card p-5 text-center">
+                    <div class="text-muted mb-4">
+                        <i class="bi bi-house-door" style="font-size: 3rem;"></i>
                     </div>
-                    <h3 class="text-[#0d141c] text-lg font-bold leading-tight tracking-[-0.015em] mb-2">No properties found</h3>
-                    <p class="text-[#49739c] text-sm font-normal leading-normal mb-4">Try adjusting your search filters or add a new property to get started.</p>
-                    <a href="{% url 'property-create' %}" class="flex min-w-[120px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#0d80f2] text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-[#0b6fd1] transition-colors mx-auto">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16px" height="16px" fill="currentColor" viewBox="0 0 256 256" class="mr-2">
-                            <path d="M224,128a8,8,0,0,1-8,8H136v80a8,8,0,0,1-16,0V136H40a8,8,0,0,1,0-16h80V40a8,8,0,0,1,16,0v80h80A8,8,0,0,1,224,128Z"></path>
-                        </svg>
-                        Add Property
-                    </a>
+                    <h5 class="fw-bold mb-2">No properties found</h5>
+                    <p class="text-muted mb-4">Try adjusting your search filters or add a new property to get started.</p>
+                    <div class="d-flex justify-content-center">
+                        <a href="{% url 'properties:property_add' %}" class="btn btn-primary">
+                            <i class="bi bi-plus me-2"></i>
+                            Add Property
+                        </a>
+                    </div>
                 </div>
             </div>
             {% endfor %}
@@ -121,32 +123,34 @@
 
         <!-- Pagination -->
         {% if is_paginated %}
-        <div class="flex justify-center mt-8">
-            <div class="flex items-center gap-2">
-                {% if page_obj.has_previous %}
-                    <a href="?page={{ page_obj.previous_page_number }}" class="flex min-w-[32px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-8 px-2 bg-[#f0f2f5] text-[#0d141c] text-sm font-bold leading-normal tracking-[0.015em] hover:bg-[#e7edf4] transition-colors">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16px" height="16px" fill="currentColor" viewBox="0 0 256 256">
-                            <path d="M165.66,202.34a8,8,0,0,1-11.32,11.32l-80-80a8,8,0,0,1,0-11.32l80-80a8,8,0,0,1,11.32,11.32L91.31,128Z"></path>
-                        </svg>
-                    </a>
-                {% endif %}
-                
-                {% for num in page_obj.paginator.page_range %}
-                    {% if page_obj.number == num %}
-                        <span class="flex min-w-[32px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-8 px-2 bg-[#0d80f2] text-white text-sm font-bold leading-normal tracking-[0.015em]">{{ num }}</span>
-                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-                        <a href="?page={{ num }}" class="flex min-w-[32px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-8 px-2 bg-[#f0f2f5] text-[#0d141c] text-sm font-bold leading-normal tracking-[0.015em] hover:bg-[#e7edf4] transition-colors">{{ num }}</a>
+        <div class="d-flex justify-content-center mt-4">
+            <nav aria-label="Page navigation">
+                <ul class="pagination">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}" aria-label="Previous">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
                     {% endif %}
-                {% endfor %}
-                
-                {% if page_obj.has_next %}
-                    <a href="?page={{ page_obj.next_page_number }}" class="flex min-w-[32px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-8 px-2 bg-[#f0f2f5] text-[#0d141c] text-sm font-bold leading-normal tracking-[0.015em] hover:bg-[#e7edf4] transition-colors">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16px" height="16px" fill="currentColor" viewBox="0 0 256 256">
-                            <path d="M181.66,133.66l-80,80a8,8,0,0,1-11.32-11.32L164.69,128,90.34,53.66a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z"></path>
-                        </svg>
-                    </a>
-                {% endif %}
-            </div>
+                    
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                            <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}" aria-label="Next">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
         </div>
         {% endif %}
     </div>

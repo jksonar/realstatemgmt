@@ -160,7 +160,7 @@
                         {% for payment in payments %}
                         <tr data-status="{{ payment.status }}">
                             <td>
-                                <a href="{% url 'payment_detail' payment.id %}" class="text-decoration-none">
+                                <a href="{% url 'payments:payment_detail' payment.id %}" class="text-decoration-none">
                                     {{ payment.payment_id }}
                                 </a>
                             </td>

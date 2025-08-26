@@ -225,7 +225,7 @@
                     <!-- Form Actions -->
                     <div class="border-t border-[#e7edf4] pt-6">
                         <div class="flex gap-4 justify-end">
-                            <a href="{% if form.instance.pk %}{% url 'payment_detail' form.instance.pk %}{% else %}{% url 'payment_list' %}{% endif %}" 
+                            <a href="{% if form.instance.pk %}{% url 'payments:payment_detail' form.instance.pk %}{% else %}{% url 'payments:payment_list' %}{% endif %}" 
                                class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#e7edf4] text-[#0d141c] text-sm font-medium leading-normal hover:bg-[#d1dce6] transition-colors">
                                 <span class="truncate">Cancel</span>
                             </a>

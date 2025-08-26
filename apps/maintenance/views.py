@@ -12,7 +12,7 @@ from apps.tenants.models import Tenant
 
 class MaintenanceListView(LoginRequiredMixin, ListView):
     model = MaintenanceRequest
-    template_name = 'maintenance_list.html'
+    template_name = 'maintenance/maintenance_list.html'
     context_object_name = 'maintenance_requests'
     paginate_by = 10
     
@@ -46,7 +46,7 @@ class MaintenanceListView(LoginRequiredMixin, ListView):
 
 class MaintenanceDetailView(LoginRequiredMixin, DetailView):
     model = MaintenanceRequest
-    template_name = 'maintenance_detail.html'
+    template_name = 'maintenance/maintenance_detail.html'
     context_object_name = 'maintenance_request'
     
     def get_context_data(self, **kwargs):
@@ -67,9 +67,9 @@ class MaintenanceDetailView(LoginRequiredMixin, DetailView):
 
 class MaintenanceCreateView(LoginRequiredMixin, CreateView):
     model = MaintenanceRequest
-    template_name = 'maintenance_form.html'
+    template_name = 'maintenance/maintenance_form.html'
     fields = ['property', 'tenant', 'issue_type', 'description', 'priority', 'status', 'assigned_to']
-    success_url = reverse_lazy('maintenance_list')
+    success_url = reverse_lazy('maintenance:maintenance_list')
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -100,7 +100,7 @@ class MaintenanceCreateView(LoginRequiredMixin, CreateView):
 
 class MaintenanceUpdateView(LoginRequiredMixin, UpdateView):
     model = MaintenanceRequest
-    template_name = 'maintenance_form.html'
+    template_name = 'maintenance/maintenance_form.html'
     fields = ['issue_type', 'description', 'priority', 'status', 'assigned_to', 'cost', 'completed_date']
     
     def get_context_data(self, **kwargs):

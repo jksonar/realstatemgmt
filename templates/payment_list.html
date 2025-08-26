@@ -35,7 +35,7 @@
                 <p class="text-[#49739c] text-base font-normal leading-normal">Manage rent payments and financial transactions</p>
             </div>
             <div class="flex gap-3">
-                <a href="{% url 'payments:payment_create' %}" class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#2884ef] text-white text-sm font-medium leading-normal hover:bg-[#1a6bd1] transition-colors">
+                <a href="{% url 'payments:payment_add' %}" class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#2884ef] text-white text-sm font-medium leading-normal hover:bg-[#1a6bd1] transition-colors">
                     <span class="truncate">Add Payment</span>
                 </a>
             </div>
@@ -148,9 +148,11 @@
                                         {% if payment.status != 'paid' %}
                                             <a href="{% url 'payments:payment_edit' payment.pk %}" class="text-[#49739c] hover:text-[#0d141c] transition-colors">Edit</a>
                                         {% endif %}
+                                        {% comment %}
                                         {% if payment.status == 'paid' %}
                                             <a href="{% url 'payment_receipt' payment.pk %}" class="text-green-600 hover:text-green-800 transition-colors">Receipt</a>
                                         {% endif %}
+                                        {% endcomment %}
                                     </div>
                                 </td>
                             </tr>
@@ -163,7 +165,7 @@
                                         </svg>
                                         <h3 class="text-lg font-medium text-[#0d141c] mb-2">No payments found</h3>
                                         <p class="text-[#49739c] mb-4">Get started by adding your first payment record.</p>
-                                        <a href="{% url 'payment_create' %}" class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#2884ef] text-white text-sm font-medium leading-normal hover:bg-[#1a6bd1] transition-colors">
+                                        <a href="{% url 'payments:payment_add' %}" class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#2884ef] text-white text-sm font-medium leading-normal hover:bg-[#1a6bd1] transition-colors">
                                             Add Payment
                                         </a>
                                     </div>

@@ -64,16 +64,18 @@
             </div>
             <div class="flex gap-3">
                 {% if payment.status != 'paid' %}
-                    <a href="{% url 'payment_edit' payment.pk %}" class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#2884ef] text-white text-sm font-medium leading-normal hover:bg-[#1a6bd1] transition-colors">
+                    <a href="{% url 'payments:payment_edit' payment.pk %}" class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#2884ef] text-white text-sm font-medium leading-normal hover:bg-[#1a6bd1] transition-colors">
                         <span class="truncate">Edit Payment</span>
                     </a>
                 {% endif %}
+                {% comment %}
                 {% if payment.status == 'paid' %}
                     <a href="{% url 'payment_receipt' payment.pk %}" class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-green-600 text-white text-sm font-medium leading-normal hover:bg-green-700 transition-colors">
                         <span class="truncate">Download Receipt</span>
                     </a>
                 {% endif %}
-                <a href="{% url 'payment_list' %}" class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#e7edf4] text-[#0d141c] text-sm font-medium leading-normal hover:bg-[#d1dce6] transition-colors">
+                {% endcomment %}
+                <a href="{% url 'payments:payment_list' %}" class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#e7edf4] text-[#0d141c] text-sm font-medium leading-normal hover:bg-[#d1dce6] transition-colors">
                     <span class="truncate">Back to Payments</span>
                 </a>
             </div>
@@ -221,6 +223,7 @@
             <div class="bg-white rounded-lg border border-[#cedbe8] p-6">
                 <h2 class="text-[#0d141c] text-xl font-bold leading-tight mb-6">Payment Actions</h2>
                 <div class="flex gap-4">
+                    {% comment %}
                     <form method="post" action="{% url 'payment_mark_paid' payment.pk %}" class="inline">
                         {% csrf_token %}
                         <button type="submit" class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-green-600 text-white text-sm font-medium leading-normal hover:bg-green-700 transition-colors">
@@ -241,6 +244,7 @@
                             <span class="truncate">Send Reminder</span>
                         </button>
                     </form>
+                    {% endcomment %}
                 </div>
             </div>
         </div>

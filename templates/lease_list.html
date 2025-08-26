@@ -65,7 +65,7 @@
         
         <!-- Filter Buttons -->
         <div class="flex gap-3 p-3 flex-wrap pr-4">
-            <a href="{% url 'lease_list' %}" class="flex h-8 shrink-0 items-center justify-center gap-x-2 rounded-lg {% if not request.GET.status %}bg-[#2884ef] text-white{% else %}bg-[#e7edf4] text-[#0d141c]{% endif %} pl-4 pr-4 hover:opacity-80 transition-opacity">
+            <a href="{% url 'leases:lease_list' %}" class="flex h-8 shrink-0 items-center justify-center gap-x-2 rounded-lg {% if not request.GET.status %}bg-[#2884ef] text-white{% else %}bg-[#e7edf4] text-[#0d141c]{% endif %} pl-4 pr-4 hover:opacity-80 transition-opacity">
                 <p class="text-sm font-medium leading-normal">All</p>
             </a>
             <a href="?status=active" class="flex h-8 shrink-0 items-center justify-center gap-x-2 rounded-lg {% if request.GET.status == 'active' %}bg-[#2884ef] text-white{% else %}bg-[#e7edf4] text-[#0d141c]{% endif %} pl-4 pr-4 hover:opacity-80 transition-opacity">

@@ -82,11 +82,13 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'apps.core.middleware.UserActivityMiddleware',
+    'apps.core.middleware.LoginRequiredMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'
 
 LOGIN_URL = '/accounts/login/' 
+LOGOUT_REDIRECT_URL = '/accounts/login/' 
 
 TEMPLATES = [
     {

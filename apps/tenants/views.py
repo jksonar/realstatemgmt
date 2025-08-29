@@ -1,8 +1,12 @@
 from django.views import generic as django_generic
-from .models import Tenant
-from django.shortcuts import render, redirect
+from .models import Tenant, TenantDocument
+from .forms import TenantDocumentForm
+from django.shortcuts import render, redirect, get_object_or_404
 from django.views import View
 from django.urls import reverse_lazy
+from django.contrib import messages
+from django.http import HttpResponseRedirect
+from django.urls import reverse
 
 class TenantListView(django_generic.ListView):
     model = Tenant
@@ -52,3 +56,44 @@ class TenantUpdateView(django_generic.UpdateView):
     template_name = 'tenants/tenant_form.html'
     fields = ['first_name', 'last_name', 'email', 'phone', 'address', 'id_proof_type', 'id_proof_number']
     success_url = reverse_lazy('tenants:tenant_list')
+
+
+class TenantDocumentUploadView(View):
+    template_name = 'tenants/document_upload.html'
+    
+    def get(self, request, pk):
+        tenant = get_object_or_404(Tenant, pk=pk)
+        form = TenantDocumentForm()
+        documents = TenantDocument.objects.filter(tenant=tenant)
+        return render(request, self.template_name, {
+            'tenant': tenant,
+            'form': form,
+            'documents': documents
+        })
+    
+    def post(self, request, pk):
+        tenant = get_object_or_404(Tenant, pk=pk)
+        form = TenantDocumentForm(request.POST, request.FILES)
+        
+        if form.is_valid():
+            document = form.save(commit=False)
+            document.tenant = tenant
+            document.save()
+            messages.success(request, 'Document uploaded successfully.')
+            return redirect('tenants:tenant_documents', pk=tenant.pk)
+        
+        documents = TenantDocument.objects.filter(tenant=tenant)
+        return render(request, self.template_name, {
+            'tenant': tenant,
+            'form': form,
+            'documents': documents
+        })
+
+
+class TenantDocumentDeleteView(View):
+    def post(self, request, pk, document_pk):
+        document = get_object_or_404(TenantDocument, pk=document_pk, tenant__pk=pk)
+        document.document.delete(save=False)  # Delete the actual file
+        document.delete()  # Delete the database record
+        messages.success(request, 'Document deleted successfully.')
+        return redirect('tenants:tenant_documents', pk=pk)

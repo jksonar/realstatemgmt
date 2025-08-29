@@ -1,0 +1,485 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Financial Dashboard - Real Estate Management{% endblock %}
+
+{% block extra_css %}
+<style>
+    .chart-container {
+        position: relative;
+        height: 300px;
+        margin-bottom: 20px;
+    }
+    .metric-card {
+        transition: all 0.3s;
+    }
+    .metric-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+    .metric-icon {
+        font-size: 2rem;
+        opacity: 0.8;
+    }
+    .trend-indicator {
+        font-size: 0.8rem;
+    }
+    .trend-up {
+        color: #28a745;
+    }
+    .trend-down {
+        color: #dc3545;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'dashboard:dashboard' %}">Dashboard</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Financial Dashboard</li>
+        </ol>
+    </nav>
+
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0">Financial Dashboard</h1>
+        <div class="d-flex gap-2">
+            <div class="btn-group">
+                <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="fas fa-calendar me-2"></i><span id="selected-period">This Month</span>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li><a class="dropdown-item period-selector" href="#" data-period="month">This Month</a></li>
+                    <li><a class="dropdown-item period-selector" href="#" data-period="quarter">This Quarter</a></li>
+                    <li><a class="dropdown-item period-selector" href="#" data-period="year">This Year</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item period-selector" href="#" data-period="custom">Custom Range</a></li>
+                </ul>
+            </div>
+            <button class="btn btn-outline-primary" id="export-dashboard">
+                <i class="fas fa-download me-2"></i>Export Report
+            </button>
+            <button class="btn btn-outline-secondary" onclick="window.print()">
+                <i class="fas fa-print me-2"></i>Print
+            </button>
+        </div>
+    </div>
+
+    <!-- Key Metrics -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card h-100 border-0 shadow-sm metric-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-1">Total Revenue</h6>
+                            <h3 class="mb-0">${{ total_revenue|floatformat:2 }}</h3>
+                            <p class="mb-0 mt-2">
+                                <span class="trend-indicator trend-up">
+                                    <i class="fas fa-arrow-up me-1"></i>{{ revenue_trend_percentage }}%
+                                </span>
+                                <span class="text-muted ms-1">vs last period</span>
+                            </p>
+                        </div>
+                        <div class="metric-icon text-success">
+                            <i class="fas fa-dollar-sign"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card h-100 border-0 shadow-sm metric-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-1">Outstanding Payments</h6>
+                            <h3 class="mb-0">${{ outstanding_payments|floatformat:2 }}</h3>
+                            <p class="mb-0 mt-2">
+                                <span class="trend-indicator {% if outstanding_trend_percentage < 0 %}trend-up{% else %}trend-down{% endif %}">
+                                    <i class="fas fa-arrow-{% if outstanding_trend_percentage < 0 %}down{% else %}up{% endif %} me-1"></i>{{ outstanding_trend_percentage|abs }}%
+                                </span>
+                                <span class="text-muted ms-1">vs last period</span>
+                            </p>
+                        </div>
+                        <div class="metric-icon text-warning">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card h-100 border-0 shadow-sm metric-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-1">Collection Rate</h6>
+                            <h3 class="mb-0">{{ collection_rate }}%</h3>
+                            <p class="mb-0 mt-2">
+                                <span class="trend-indicator {% if collection_trend_percentage > 0 %}trend-up{% else %}trend-down{% endif %}">
+                                    <i class="fas fa-arrow-{% if collection_trend_percentage > 0 %}up{% else %}down{% endif %} me-1"></i>{{ collection_trend_percentage|abs }}%
+                                </span>
+                                <span class="text-muted ms-1">vs last period</span>
+                            </p>
+                        </div>
+                        <div class="metric-icon text-info">
+                            <i class="fas fa-percentage"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card h-100 border-0 shadow-sm metric-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-1">Net Income</h6>
+                            <h3 class="mb-0">${{ net_income|floatformat:2 }}</h3>
+                            <p class="mb-0 mt-2">
+                                <span class="trend-indicator {% if income_trend_percentage > 0 %}trend-up{% else %}trend-down{% endif %}">
+                                    <i class="fas fa-arrow-{% if income_trend_percentage > 0 %}up{% else %}down{% endif %} me-1"></i>{{ income_trend_percentage|abs }}%
+                                </span>
+                                <span class="text-muted ms-1">vs last period</span>
+                            </p>
+                        </div>
+                        <div class="metric-icon text-primary">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row 1 -->
+    <div class="row mb-4">
+        <div class="col-lg-8 mb-4 mb-lg-0">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white">
+                    <h5 class="card-title mb-0">Revenue Trend</h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="revenueTrendChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white">
+                    <h5 class="card-title mb-0">Payment Status Distribution</h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="paymentStatusChart"></canvas>
+                    </div>
+                    <div class="mt-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div>
+                                <span class="badge bg-success me-2">●</span>
+                                <span>Paid</span>
+                            </div>
+                            <span>{{ paid_payments_count }} ({{ paid_percentage }}%)</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div>
+                                <span class="badge bg-warning me-2">●</span>
+                                <span>Pending</span>
+                            </div>
+                            <span>{{ pending_payments_count }} ({{ pending_percentage }}%)</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="badge bg-danger me-2">●</span>
+                                <span>Overdue</span>
+                            </div>
+                            <span>{{ overdue_payments_count }} ({{ overdue_percentage }}%)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row 2 -->
+    <div class="row mb-4">
+        <div class="col-lg-6 mb-4 mb-lg-0">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white">
+                    <h5 class="card-title mb-0">Income vs Expenses</h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="incomeExpensesChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white">
+                    <h5 class="card-title mb-0">Top Performing Properties</h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="topPropertiesChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Transactions -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+            <h5 class="card-title mb-0">Recent Transactions</h5>
+            <a href="{% url 'payments:payment_list' %}" class="btn btn-sm btn-outline-primary">View All</a>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Property</th>
+                            <th>Tenant</th>
+                            <th>Type</th>
+                            <th>Amount</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for payment in recent_payments %}
+                        <tr>
+                            <td>{{ payment.payment_id }}</td>
+                            <td>{{ payment.lease.property.address }}</td>
+                            <td>{{ payment.lease.tenant.first_name }} {{ payment.lease.tenant.last_name }}</td>
+                            <td>{{ payment.payment_type|title }}</td>
+                            <td>${{ payment.amount|floatformat:2 }}</td>
+                            <td>{{ payment.payment_date|date:"M d, Y" }}</td>
+                            <td>
+                                <span class="badge {% if payment.status == 'paid' %}bg-success{% elif payment.status == 'pending' %}bg-warning{% else %}bg-danger{% endif %}">
+                                    {{ payment.status|title }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center py-4">
+                                <p class="mb-0 text-muted">No recent transactions found</p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Set Chart.js defaults
+        Chart.defaults.font.family = "'Inter', 'Helvetica', 'Arial', sans-serif";
+        Chart.defaults.font.size = 12;
+        Chart.defaults.color = '#6c757d';
+        
+        // Revenue Trend Chart
+        const revenueTrendCtx = document.getElementById('revenueTrendChart').getContext('2d');
+        const revenueTrendChart = new Chart(revenueTrendCtx, {
+            type: 'line',
+            data: {
+                labels: {{ revenue_trend_labels|safe }},
+                datasets: [{
+                    label: 'Revenue',
+                    data: {{ revenue_trend_data|safe }},
+                    borderColor: '#28a745',
+                    backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                    borderWidth: 2,
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return '$' + value.toLocaleString();
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return '$' + context.parsed.y.toLocaleString();
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Payment Status Chart
+        const paymentStatusCtx = document.getElementById('paymentStatusChart').getContext('2d');
+        const paymentStatusChart = new Chart(paymentStatusCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Paid', 'Pending', 'Overdue'],
+                datasets: [{
+                    data: [
+                        {{ paid_payments_count }},
+                        {{ pending_payments_count }},
+                        {{ overdue_payments_count }}
+                    ],
+                    backgroundColor: [
+                        '#28a745',
+                        '#ffc107',
+                        '#dc3545'
+                    ],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                cutout: '70%'
+            }
+        });
+        
+        // Income vs Expenses Chart
+        const incomeExpensesCtx = document.getElementById('incomeExpensesChart').getContext('2d');
+        const incomeExpensesChart = new Chart(incomeExpensesCtx, {
+            type: 'bar',
+            data: {
+                labels: {{ months_labels|safe }},
+                datasets: [
+                    {
+                        label: 'Income',
+                        data: {{ income_data|safe }},
+                        backgroundColor: 'rgba(40, 167, 69, 0.7)'
+                    },
+                    {
+                        label: 'Expenses',
+                        data: {{ expenses_data|safe }},
+                        backgroundColor: 'rgba(220, 53, 69, 0.7)'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return '$' + value.toLocaleString();
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.dataset.label + ': $' + context.parsed.y.toLocaleString();
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Top Properties Chart
+        const topPropertiesCtx = document.getElementById('topPropertiesChart').getContext('2d');
+        const topPropertiesChart = new Chart(topPropertiesCtx, {
+            type: 'horizontalBar',
+            data: {
+                labels: {{ top_properties_labels|safe }},
+                datasets: [{
+                    label: 'Revenue',
+                    data: {{ top_properties_data|safe }},
+                    backgroundColor: 'rgba(0, 123, 255, 0.7)',
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return '$' + value.toLocaleString();
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return '$' + context.parsed.x.toLocaleString();
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Period selector functionality
+        document.querySelectorAll('.period-selector').forEach(function(element) {
+            element.addEventListener('click', function(e) {
+                e.preventDefault();
+                const period = this.getAttribute('data-period');
+                document.getElementById('selected-period').textContent = this.textContent;
+                
+                if (period === 'custom') {
+                    // Show date range picker (implementation would depend on your date picker library)
+                    console.log('Show date range picker');
+                } else {
+                    // Reload page with period parameter
+                    window.location.href = `?period=${period}`;
+                }
+            });
+        });
+        
+        // Export functionality
+        document.getElementById('export-dashboard').addEventListener('click', function() {
+            // Implementation would depend on your export functionality
+            // This could trigger a download of PDF/Excel or open a modal with export options
+            alert('Export functionality would be implemented here');
+        });
+    });
+</script>
+{% endblock %}

@@ -5,9 +5,17 @@ from rest_framework.response import Response
 from django.db.models import Q, Count
 from django.utils import timezone
 from datetime import timedelta
-from .models import SavedSearch, SearchHistory
+from .models import SavedSearch, SearchHistory, AdvancedSearchFilter
 from apps.properties.models import FavoriteProperty, Property
-from .serializers import SavedSearchSerializer, FavoritePropertySerializer, SearchHistorySerializer
+from .serializers import SavedSearchSerializer, FavoritePropertySerializer, SearchHistorySerializer, AdvancedSearchFilterSerializer
+
+class AdvancedSearchFilterViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    A viewset for retrieving available advanced search filters.
+    """
+    queryset = AdvancedSearchFilter.objects.filter(is_active=True).order_by('display_order')
+    serializer_class = AdvancedSearchFilterSerializer
+    permission_classes = [IsAuthenticated]
 
 class SavedSearchViewSet(viewsets.ModelViewSet):
     """
@@ -21,6 +29,16 @@ class SavedSearchViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+        
+    @action(detail=True, methods=['post'])
+    def use(self, request, pk=None):
+        """
+        Mark a saved search as used and update its last_used timestamp.
+        """
+        saved_search = self.get_object()
+        saved_search.last_used = timezone.now()
+        saved_search.save()
+        return Response({'status': 'saved search marked as used'})
 
 class FavoritePropertyViewSet(viewsets.ModelViewSet):
     """
@@ -93,6 +111,26 @@ class SearchHistoryViewSet(viewsets.ModelViewSet):
             suggestions = suggestions[:10]
         
         return Response({'suggestions': suggestions})
+        
+    @action(detail=True, methods=['delete'])
+    def delete(self, request, pk=None):
+        """
+        Delete a specific search history entry.
+        """
+        try:
+            history_entry = self.get_object()
+            history_entry.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            
+    @action(detail=False, methods=['delete'])
+    def clear_all(self, request):
+        """
+        Clear all search history for the current user.
+        """
+        self.get_queryset().delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=False, methods=['get'])
     def recent(self, request):

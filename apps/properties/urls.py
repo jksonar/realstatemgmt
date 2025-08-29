@@ -19,6 +19,8 @@ urlpatterns = [
     path('bulk-update/', views.BulkUpdatePropertiesView.as_view(), name='property_bulk_update'),
     path('compare/', views.PropertyCompareView.as_view(), name='property_compare'),
     path('csv-import-export/', views.CSVImportExportView.as_view(), name='property_csv_import_export'),
+    path('advanced-search/', views.AdvancedSearchView.as_view(), name='advanced_search'),
+    path('saved-searches/', views.SavedSearchesView.as_view(), name='saved_searches'),
     
     # API endpoints
     path('', include(router.urls)),

@@ -25,20 +25,30 @@
             </div>
         </form>
         
-        <div class="table-responsive">
-            <table class="table table-hover align-middle">
-                <thead class="table-light">
-                    <tr>
-                        <th>ID</th>
-                        <th>Name</th>
-                        <th>Email</th>
-                        <th>Phone</th>
-                        <th>Status</th>
-                        <th class="text-end">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for tenant in tenants %}
+        <!-- Responsive toggle for table/card view -->
+        <div class="d-flex justify-content-end mb-3 d-md-none">
+            <div class="btn-group" role="group">
+                <button type="button" class="btn btn-sm btn-outline-secondary active" id="table-view-btn"><i class="bi bi-table"></i> Table</button>
+                <button type="button" class="btn btn-sm btn-outline-secondary" id="card-view-btn"><i class="bi bi-grid"></i> Cards</button>
+            </div>
+        </div>
+        
+        <!-- Table view (default) -->
+        <div class="table-view">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>Status</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for tenant in tenants %}
                     <tr>
                         <td>{{ tenant.tenant_id }}</td>
                         <td>{{ tenant.first_name }} {{ tenant.last_name }}</td>
@@ -68,9 +78,78 @@
                         </td>
                     </tr>
                     {% endfor %}
-                </tbody>
-            </table>
+                    </tbody>
+                </table>
+            </div>
         </div>
+        
+        <!-- Card view (mobile-friendly alternative) -->
+        <div class="mobile-card-view d-none">
+            {% for tenant in tenants %}
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">{{ tenant.first_name }} {{ tenant.last_name }}</h5>
+                    <p class="card-text small text-muted mb-1">ID: {{ tenant.tenant_id }}</p>
+                    <div class="mb-2">
+                        <span class="property-card-label">Email:</span> {{ tenant.email }}
+                    </div>
+                    <div class="mb-2">
+                        <span class="property-card-label">Phone:</span> {{ tenant.phone }}
+                    </div>
+                    <div class="mb-3">
+                        <span class="property-card-label">Status:</span>
+                        {% if tenant.lease_set.exists %}
+                        <span class="badge bg-success">Active Lease</span>
+                        {% else %}
+                        <span class="badge bg-secondary">No Lease</span>
+                        {% endif %}
+                    </div>
+                    <div class="d-flex gap-2">
+                        <a href="{% url 'tenants:tenant_detail' tenant.pk %}" class="btn btn-sm btn-outline-primary"><i class="fas fa-eye"></i> View</a>
+                        <a href="{% url 'tenants:tenant_edit' tenant.pk %}" class="btn btn-sm btn-outline-warning"><i class="fas fa-edit"></i> Edit</a>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="text-center py-4">
+                <div class="empty-state">
+                    <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                    <h5>No tenants found</h5>
+                    <p class="text-muted">Add your first tenant to get started</p>
+                    <a href="{% url 'tenants:tenant_add' %}" class="btn btn-primary">Add Tenant</a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <script>
+            // Mobile view toggle functionality
+            const tableViewBtn = document.getElementById('table-view-btn');
+            const cardViewBtn = document.getElementById('card-view-btn');
+            const tableView = document.querySelector('.table-view');
+            const cardView = document.querySelector('.mobile-card-view');
+            
+            if (tableViewBtn && cardViewBtn) {
+                tableViewBtn.addEventListener('click', function() {
+                    tableView.classList.remove('d-none');
+                    cardView.classList.add('d-none');
+                    tableViewBtn.classList.add('active');
+                    cardViewBtn.classList.remove('active');
+                });
+                
+                cardViewBtn.addEventListener('click', function() {
+                    cardView.classList.remove('d-none');
+                    tableView.classList.add('d-none');
+                    cardViewBtn.classList.add('active');
+                    tableViewBtn.classList.remove('active');
+                });
+                
+                // Auto-switch to card view on very small screens
+                if (window.innerWidth < 576) {
+                    cardViewBtn.click();
+                }
+            }
+        </script>
         
         {% if is_paginated %}
         <nav aria-label="Page navigation" class="mt-4">

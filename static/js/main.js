@@ -55,13 +55,41 @@ document.addEventListener("DOMContentLoaded", function() {
     
     // Hide sidebar when clicking outside on mobile
     const pageContentWrapper = document.getElementById("page-content-wrapper");
-    if (pageContentWrapper && window.innerWidth < 768) {
+    if (pageContentWrapper) {
         pageContentWrapper.addEventListener("click", function() {
-            if (wrapper.classList.contains("toggled")) {
+            if (window.innerWidth < 768 && wrapper && wrapper.classList.contains("toggled")) {
                 wrapper.classList.remove("toggled");
             }
         });
     }
+    
+    // Handle window resize events for responsive behavior
+    window.addEventListener('resize', function() {
+        // Close sidebar on small screens when resizing
+        if (window.innerWidth < 768 && wrapper && wrapper.classList.contains("toggled")) {
+            wrapper.classList.remove("toggled");
+        }
+        
+        // Switch between table and card views based on screen size
+        const tableViews = document.querySelectorAll('.table-view');
+        const cardViews = document.querySelectorAll('.mobile-card-view');
+        const tableViewBtns = document.querySelectorAll('#table-view-btn');
+        const cardViewBtns = document.querySelectorAll('#card-view-btn');
+        
+        if (window.innerWidth < 576) {
+            // Switch to card view on small screens
+            tableViews.forEach(view => view.classList.add('d-none'));
+            cardViews.forEach(view => view.classList.remove('d-none'));
+            tableViewBtns.forEach(btn => btn.classList.remove('active'));
+            cardViewBtns.forEach(btn => btn.classList.add('active'));
+        } else if (window.innerWidth >= 768) {
+            // Switch to table view on larger screens
+            tableViews.forEach(view => view.classList.remove('d-none'));
+            cardViews.forEach(view => view.classList.add('d-none'));
+            tableViewBtns.forEach(btn => btn.classList.add('active'));
+            cardViewBtns.forEach(btn => btn.classList.remove('active'));
+        }
+    });
 
     // Initialize tooltips
     const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));

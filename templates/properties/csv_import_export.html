@@ -1,26 +1,79 @@
 {% extends 'base.html' %}
 
-{% block title %}CSV Import/Export{% endblock %}
+{% block title %}Property Import/Export{% endblock %}
 
-{% block page_title %}CSV Import/Export{% endblock %}
+{% block page_title %}Property Import/Export{% endblock %}
 
 {% block content %}
-<div class="card">
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0">Import Properties</h5>
+    </div>
     <div class="card-body">
-        <h5>Import Properties</h5>
+        {% if messages %}
+        <div class="mb-4">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
         <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
             <div class="mb-3">
-                <label for="csv_file" class="form-label">CSV File</label>
-                <input type="file" name="csv_file" class="form-control" required>
+                <label for="import_file" class="form-label">Select File</label>
+                <input type="file" name="import_file" id="import_file" class="form-control" accept=".csv,.xlsx,.xls" required>
+                <div class="form-text">Supported formats: CSV, Excel (.xlsx, .xls)</div>
             </div>
-            <button type="submit" name="import" class="btn btn-primary">Import</button>
+            <div class="mb-3">
+                <div class="alert alert-info">
+                    <h6>Required Fields:</h6>
+                    <p class="mb-1">The file must contain the following columns:</p>
+                    <ul class="mb-0">
+                        <li>property_id</li>
+                        <li>address</li>
+                        <li>city</li>
+                        <li>area</li>
+                        <li>property_type</li>
+                        <li>size_sqft</li>
+                        <li>rent_amount</li>
+                        <li>deposit_amount</li>
+                        <li>status</li>
+                        <li>furnished_type</li>
+                    </ul>
+                </div>
+            </div>
+            <button type="submit" name="import" class="btn btn-primary">
+                <i class="bi bi-upload"></i> Import Properties
+            </button>
         </form>
-        <hr>
-        <h5>Export Properties</h5>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">Export Properties</h5>
+    </div>
+    <div class="card-body">
         <form method="post">
             {% csrf_token %}
-            <button type="submit" name="export" class="btn btn-success">Export</button>
+            <div class="mb-3">
+                <label class="form-label">Export Format</label>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="export_format" id="format_csv" value="csv" checked>
+                    <label class="form-check-label" for="format_csv">CSV</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="export_format" id="format_excel" value="excel">
+                    <label class="form-check-label" for="format_excel">Excel</label>
+                </div>
+            </div>
+            <button type="submit" name="export" class="btn btn-success">
+                <i class="bi bi-download"></i> Export Properties
+            </button>
         </form>
     </div>
 </div>

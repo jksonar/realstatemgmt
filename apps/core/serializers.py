@@ -5,7 +5,7 @@ from apps.tenants.models import Tenant
 from apps.leases.models import Lease
 from apps.payments.models import Payment
 from apps.maintenance.models import MaintenanceRequest
-from .models import SavedSearch, SearchHistory
+from .models import SavedSearch, SearchHistory, AdvancedSearchFilter
 
 
 
@@ -38,10 +38,22 @@ class SavedSearchSerializer(serializers.ModelSerializer):
     class Meta:
         model = SavedSearch
         fields = '__all__'
+        
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        # Add a formatted date for display purposes
+        if instance.last_used:
+            representation['last_used_formatted'] = instance.last_used.strftime('%Y-%m-%d %H:%M')
+        return representation
 
 class FavoritePropertySerializer(serializers.ModelSerializer):
     class Meta:
         model = FavoriteProperty
+        fields = '__all__'
+
+class AdvancedSearchFilterSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AdvancedSearchFilter
         fields = '__all__'
 
 class SearchHistorySerializer(serializers.ModelSerializer):

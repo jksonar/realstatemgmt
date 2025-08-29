@@ -207,9 +207,12 @@
                     </div>
                 </div>
                 
-                <div class="mt-4 text-center">
+                <div class="mt-4 text-center d-flex justify-content-center gap-2">
                     <a href="{% url 'reports:financial_report' %}" class="btn btn-outline-primary">
-                        <i class="fas fa-chart-line me-1"></i> View Detailed Report
+                        <i class="fas fa-chart-line me-1"></i> Detailed Report
+                    </a>
+                    <a href="{% url 'reports:financial_dashboard' %}" class="btn btn-outline-info">
+                        <i class="fas fa-chart-pie me-1"></i> Financial Dashboard
                     </a>
                 </div>
             </div>

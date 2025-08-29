@@ -26,7 +26,7 @@ from .payment_method_views import PaymentMethodViewSet
 from .dashboard_views import FinancialDashboardViewSet
 from .payment_import_export_views import PaymentImportExportViewSet, PropertyImportExportViewSet
 from .property_search_views import PropertySearchViewSet
-from .saved_search_views import SavedSearchViewSet, FavoritePropertyViewSet, SearchHistoryViewSet
+from .saved_search_views import SavedSearchViewSet, FavoritePropertyViewSet, SearchHistoryViewSet, AdvancedSearchFilterViewSet
 from .reporting_views import FinancialReportView, CustomReportBuilderView
 
 router = DefaultRouter()
@@ -47,6 +47,7 @@ router.register(r'properties/search', PropertySearchViewSet, basename='property-
 router.register(r'saved-searches', SavedSearchViewSet, basename='saved-search')
 router.register(r'favorite-properties', FavoritePropertyViewSet, basename='favorite-property')
 router.register(r'search-history', SearchHistoryViewSet, basename='search-history')
+router.register(r'advanced-search-filters', AdvancedSearchFilterViewSet, basename='advanced-search-filter')
 
 urlpatterns = [
     path('dashboard/', DashboardView.as_view(), name='dashboard'),

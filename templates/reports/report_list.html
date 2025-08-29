@@ -131,6 +131,29 @@
                                 </div>
                             </div>
                         </div>
+                        
+                        <div class="col-md-6 mb-3" data-category="financial">
+                            <div class="card border-0 bg-light h-100">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div class="text-info">
+                                            <i class="fas fa-chart-pie fa-2x"></i>
+                                        </div>
+                                        <span class="badge bg-danger">New</span>
+                                    </div>
+                                    <h6 class="card-title">Financial Dashboard</h6>
+                                    <p class="card-text text-muted small">Interactive financial dashboard with charts and key performance indicators.</p>
+                                    <div class="d-flex gap-2">
+                                        <a href="{% url 'reports:financial_dashboard' %}" class="btn btn-sm btn-primary">
+                                            <i class="fas fa-eye me-1"></i>View
+                                        </a>
+                                        <button class="btn btn-sm btn-outline-secondary" onclick="scheduleReport('financial-dashboard')">
+                                            <i class="fas fa-clock me-1"></i>Schedule
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
                         <div class="col-md-6 mb-3" data-category="financial">
                             <div class="card border-0 bg-light h-100">

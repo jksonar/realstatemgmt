@@ -1,6 +1,7 @@
 from django.core.management.base import BaseCommand
 from django.contrib.auth import get_user_model
-from core.models import SearchHistory, SavedSearch, Property
+from apps.core.models import SearchHistory, SavedSearch, AdvancedSearchFilter
+from apps.properties.models import Property
 from django.utils import timezone
 from datetime import timedelta
 import random
@@ -24,9 +25,41 @@ class Command(BaseCommand):
             help='Number of search history entries to create'
         )
 
+    def create_advanced_search_filters(self):
+        # Define the advanced search filters
+        filters = [
+            {'name': 'Price Range', 'field_name': 'rent_amount', 'filter_type': 'range', 'display_order': 1},
+            {'name': 'Size (sq ft)', 'field_name': 'size_sqft', 'filter_type': 'range', 'display_order': 2},
+            {'name': 'Property Type', 'field_name': 'property_type', 'filter_type': 'exact', 'display_order': 3},
+            {'name': 'City', 'field_name': 'city', 'filter_type': 'exact', 'display_order': 4},
+            {'name': 'Area', 'field_name': 'area', 'filter_type': 'contains', 'display_order': 5},
+            {'name': 'Status', 'field_name': 'status', 'filter_type': 'exact', 'display_order': 6},
+            {'name': 'Furnished Type', 'field_name': 'furnished_type', 'filter_type': 'exact', 'display_order': 7},
+            {'name': 'Amenities', 'field_name': 'amenities', 'filter_type': 'contains', 'display_order': 8},
+        ]
+        
+        # Create or update filters
+        for filter_data in filters:
+            obj, created = AdvancedSearchFilter.objects.update_or_create(
+                field_name=filter_data['field_name'],
+                defaults={
+                    'name': filter_data['name'],
+                    'filter_type': filter_data['filter_type'],
+                    'display_order': filter_data['display_order'],
+                    'is_active': True
+                }
+            )
+            if created:
+                self.stdout.write(f"Created filter: {obj.name}")
+            else:
+                self.stdout.write(f"Updated filter: {obj.name}")
+    
     def handle(self, *args, **options):
         users_count = options['users']
         searches_count = options['searches']
+        
+        # Create advanced search filters
+        self.create_advanced_search_filters()
         
         # Sample search queries
         sample_queries = [
@@ -119,6 +152,12 @@ class Command(BaseCommand):
                     'property_type': '2BHK',
                     'furnished_type': 'furnished',
                     'status': 'available'
+                },
+                'is_advanced': True,
+                'advanced_filters': {
+                    'rent_amount': {'min': 15000, 'max': 30000},
+                    'size_sqft': {'min': 750, 'max': 1200},
+                    'amenities': ['parking', 'security']
                 }
             },
             {
@@ -127,6 +166,12 @@ class Command(BaseCommand):
                     'city': 'Bangalore',
                     'area': 'Electronic City',
                     'status': 'available'
+                },
+                'is_advanced': True,
+                'advanced_filters': {
+                    'rent_amount': {'min': 20000, 'max': 40000},
+                    'size_sqft': {'min': 900, 'max': 1500},
+                    'amenities': ['gym', 'power_backup', 'swimming_pool']
                 }
             },
             {
@@ -135,7 +180,9 @@ class Command(BaseCommand):
                     'rent_amount__lte': '25000',
                     'status': 'available',
                     'ordering': 'rent_amount'
-                }
+                },
+                'is_advanced': False,
+                'advanced_filters': {}
             },
             {
                 'name': 'Luxury 3BHK',
@@ -143,6 +190,12 @@ class Command(BaseCommand):
                     'property_type': '3BHK',
                     'rent_amount__gte': '50000',
                     'furnished_type': 'furnished'
+                },
+                'is_advanced': True,
+                'advanced_filters': {
+                    'rent_amount': {'min': 50000, 'max': 100000},
+                    'size_sqft': {'min': 1500, 'max': 2500},
+                    'amenities': ['gym', 'swimming_pool', 'security']
                 }
             }
         ]
@@ -154,7 +207,9 @@ class Command(BaseCommand):
                     user=user,
                     name=search_data['name'],
                     defaults={
-                        'query_params': search_data['query_params']
+                        'query_params': search_data['query_params'],
+                        'is_advanced': search_data['is_advanced'],
+                        'advanced_filters': search_data['advanced_filters']
                     }
                 )
                 if created:

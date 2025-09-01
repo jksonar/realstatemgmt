@@ -22,6 +22,8 @@ urlpatterns = [
     path('payments/', include('apps.payments.urls')),
     path('maintenance/', include('apps.maintenance.urls')),
     path('reports/', include('apps.reports.urls')),
+    path('api/leads/', include('apps.leads.urls')),
+    path('leads/', include('apps.leads.frontend_urls')),
 ]
 
 if settings.DEBUG:

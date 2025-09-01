@@ -6,6 +6,12 @@
 {% block page_title %}Payment List{% endblock %}
 
 {% block content %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'dashboard:dashboard' %}">Dashboard</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Payments</li>
+    </ol>
+</nav>
 <!-- Summary Cards -->
 <div class="row mb-4">
             <div class="col-xl-3 col-md-6">

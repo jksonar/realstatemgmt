@@ -1,0 +1,195 @@
+{% extends 'base.html' %}
+
+{% block title %}Leads Management{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Leads Management</h1>
+        <a href="{% url 'leads_frontend:lead-create' %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Add New Lead
+        </a>
+    </div>
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+            <h6 class="m-0 font-weight-bold text-primary">All Leads</h6>
+            <div class="dropdown no-arrow">
+                <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+                </a>
+                <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in" aria-labelledby="dropdownMenuLink">
+                    <div class="dropdown-header">Lead Actions:</div>
+                    <a class="dropdown-item" href="{% url 'leads_frontend:lead-export' %}">Export to CSV</a>
+                    <a class="dropdown-item" href="{% url 'leads_frontend:lead-import' %}">Import Leads</a>
+                    <div class="dropdown-divider"></div>
+                    <a class="dropdown-item" href="{% url 'leads_frontend:lead-source-list' %}">Manage Lead Sources</a>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <div class="mb-3">
+                    <form method="get" class="form-inline">
+                        <div class="form-group mr-2">
+                            <input type="text" name="search" class="form-control" placeholder="Search leads..." value="{{ request.GET.search }}">
+                        </div>
+                        <div class="form-group mr-2">
+                            <select name="status" class="form-control">
+                                <option value="">All Statuses</option>
+                                <option value="new" {% if request.GET.status == 'new' %}selected{% endif %}>New</option>
+                                <option value="contacted" {% if request.GET.status == 'contacted' %}selected{% endif %}>Contacted</option>
+                                <option value="qualified" {% if request.GET.status == 'qualified' %}selected{% endif %}>Qualified</option>
+                                <option value="proposal" {% if request.GET.status == 'proposal' %}selected{% endif %}>Proposal</option>
+                                <option value="negotiation" {% if request.GET.status == 'negotiation' %}selected{% endif %}>Negotiation</option>
+                                <option value="converted" {% if request.GET.status == 'converted' %}selected{% endif %}>Converted</option>
+                                <option value="lost" {% if request.GET.status == 'lost' %}selected{% endif %}>Lost</option>
+                            </select>
+                        </div>
+                        <div class="form-group mr-2">
+                            <select name="source" class="form-control">
+                                <option value="">All Sources</option>
+                                {% for source in lead_sources %}
+                                <option value="{{ source.id }}" {% if request.GET.source == source.id|stringformat:"i" %}selected{% endif %}>{{ source.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group mr-2">
+                            <select name="priority" class="form-control">
+                                <option value="">All Priorities</option>
+                                <option value="high" {% if request.GET.priority == 'high' %}selected{% endif %}>High</option>
+                                <option value="medium" {% if request.GET.priority == 'medium' %}selected{% endif %}>Medium</option>
+                                <option value="low" {% if request.GET.priority == 'low' %}selected{% endif %}>Low</option>
+                            </select>
+                        </div>
+                        <div class="form-group mr-2">
+                            <select name="budget_range" class="form-control">
+                                <option value="">All Budget Ranges</option>
+                                <option value="under_100k" {% if request.GET.budget_range == 'under_100k' %}selected{% endif %}>Under $100K</option>
+                                <option value="100k_250k" {% if request.GET.budget_range == '100k_250k' %}selected{% endif %}>$100K - $250K</option>
+                                <option value="250k_500k" {% if request.GET.budget_range == '250k_500k' %}selected{% endif %}>$250K - $500K</option>
+                                <option value="500k_1m" {% if request.GET.budget_range == '500k_1m' %}selected{% endif %}>$500K - $1M</option>
+                                <option value="over_1m" {% if request.GET.budget_range == 'over_1m' %}selected{% endif %}>Over $1M</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Filter</button>
+                        <a href="{% url 'leads_frontend:lead-list' %}" class="btn btn-secondary ml-2">Reset</a>
+                    </form>
+                </div>
+                <table class="table table-bordered" id="leadsTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>Status</th>
+                            <th>Priority</th>
+                            <th>Source</th>
+                            <th>Score</th>
+                            <th>Budget</th>
+                            <th>Inquiry Date</th>
+                            <th>Next Follow-up</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for lead in leads %}
+                        <tr>
+                            <td>
+                                <a href="{% url 'leads_frontend:lead-detail' lead.id %}">
+                                    {{ lead.first_name }} {{ lead.last_name }}
+                                </a>
+                            </td>
+                            <td>{{ lead.email }}</td>
+                            <td>{{ lead.phone }}</td>
+                            <td>
+                                <span class="badge badge-{{ lead.get_status_badge_class }}">{{ lead.get_status_display }}</span>
+                            </td>
+                            <td>
+                                <span class="badge badge-{{ lead.get_priority_badge_class }}">{{ lead.get_priority_display|default:"Medium" }}</span>
+                            </td>
+                            <td>{{ lead.source.name|default:"Not specified" }}</td>
+                            <td>{{ lead.score }}</td>
+                            <td>{{ lead.get_budget_range_display|default:"Not specified" }}</td>
+                            <td>{{ lead.inquiry_date|date:"M d, Y" }}</td>
+                            <td>
+                                {% if lead.next_follow_up %}
+                                {{ lead.next_follow_up|date:"M d, Y" }}
+                                {% else %}
+                                <span class="text-muted">Not scheduled</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group">
+                                    <a href="{% url 'leads_frontend:lead-detail' lead.id %}" class="btn btn-sm btn-info">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{% url 'leads_frontend:lead-update' lead.id %}" class="btn btn-sm btn-primary">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="{% url 'leads_frontend:lead-delete' lead.id %}" class="btn btn-sm btn-danger">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="11" class="text-center">No leads found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                
+                {% if is_paginated %}
+                <nav aria-label="Page navigation">
+                    <ul class="pagination justify-content-center">
+                        {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">&laquo; First</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Previous</a>
+                        </li>
+                        {% endif %}
+                        
+                        {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ num }} <span class="sr-only">(current)</span></span>
+                        </li>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ num }}</a>
+                        </li>
+                        {% endif %}
+                        {% endfor %}
+                        
+                        {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Next</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Last &raquo;</a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        // Initialize datepickers for filtering
+        $('.datepicker').datepicker({
+            format: 'yyyy-mm-dd',
+            autoclose: true
+        });
+    });
+</script>
+{% endblock %}

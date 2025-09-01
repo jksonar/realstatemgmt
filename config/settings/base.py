@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     'apps.leases.apps.LeasesConfig',
     'apps.payments.apps.PaymentsConfig',
     'apps.maintenance.apps.MaintenanceConfig',
+    'apps.leads.apps.LeadsConfig',
     'rest_framework',
 ]
 

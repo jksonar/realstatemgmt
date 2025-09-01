@@ -1,0 +1,361 @@
+{% extends 'base.html' %}
+
+{% block title %}Lead: {{ lead.first_name }} {{ lead.last_name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Lead Details</h1>
+        <div>
+            <a href="{% url 'leads_frontend:lead-list' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Leads
+            </a>
+            <a href="{% url 'leads_frontend:lead-update' lead.id %}" class="btn btn-primary">
+                <i class="fas fa-edit"></i> Edit Lead
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Lead Information Card -->
+        <div class="col-xl-4 col-md-6 mb-4">
+            <div class="card shadow h-100">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Lead Information</h6>
+                    <div class="dropdown no-arrow">
+                        <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in" aria-labelledby="dropdownMenuLink">
+                            <div class="dropdown-header">Lead Actions:</div>
+                            <a class="dropdown-item" href="{% url 'leads_frontend:lead-update' lead.id %}">Edit Lead</a>
+                            <a class="dropdown-item" href="#" data-toggle="modal" data-target="#scheduleFollowUpModal">Schedule Follow-up</a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item text-danger" href="{% url 'leads_frontend:lead-delete' lead.id %}">Delete Lead</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3 text-center">
+                        <div class="display-4 mb-2">
+                            <i class="fas fa-user-circle text-gray-300"></i>
+                        </div>
+                        <h4>{{ lead.first_name }} {{ lead.last_name }}</h4>
+                        <span class="badge badge-{{ lead.get_status_badge_class }} badge-pill px-3 py-2 mb-3">{{ lead.get_status_display }}</span>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h6 class="font-weight-bold">Contact Information</h6>
+                        <hr class="mt-0">
+                        <p><i class="fas fa-envelope mr-2 text-gray-500"></i> {{ lead.email|default:"No email provided" }}</p>
+                        <p><i class="fas fa-phone mr-2 text-gray-500"></i> {{ lead.phone|default:"No phone provided" }}</p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h6 class="font-weight-bold">Lead Details</h6>
+                        <hr class="mt-0">
+                        <p><strong>Source:</strong> {{ lead.source.name|default:"Not specified" }}</p>
+                        <p><strong>Score:</strong> <span class="badge badge-info">{{ lead.score }}</span></p>
+                        <p><strong>Priority:</strong> <span class="badge badge-{{ lead.get_priority_badge_class }}">{{ lead.get_priority_display|default:"Medium" }}</span></p>
+                        <p><strong>Budget Range:</strong> {{ lead.get_budget_range_display|default:"Not specified" }}</p>
+                        <p><strong>Preferred Contact:</strong> {{ lead.get_preferred_contact_method_display }}</p>
+                        <p><strong>Inquiry Date:</strong> {{ lead.inquiry_date|date:"F d, Y" }}</p>
+                        <p><strong>Last Contact:</strong> 
+                            {% if lead.last_contact_date %}
+                            {{ lead.last_contact_date|date:"F d, Y" }}
+                            {% else %}
+                            <span class="text-muted">No contact yet</span>
+                            {% endif %}
+                        </p>
+                        <p><strong>Next Follow-up:</strong> 
+                            {% if lead.next_follow_up %}
+                            {{ lead.next_follow_up|date:"F d, Y" }}
+                            {% else %}
+                            <span class="text-muted">Not scheduled</span>
+                            {% endif %}
+                        </p>
+                        {% if lead.converted_date %}
+                        <p><strong>Converted Date:</strong> {{ lead.converted_date|date:"F d, Y" }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h6 class="font-weight-bold">Marketing Information</h6>
+                        <hr class="mt-0">
+                        <p><strong>Campaign:</strong> {{ lead.campaign|default:"Not specified" }}</p>
+                        <p><strong>Referral Source:</strong> {{ lead.referral_source|default:"Not specified" }}</p>
+                    </div>
+                    
+                    {% if lead.related_property %}
+                    <div class="mb-3">
+                        <h6 class="font-weight-bold">Interested Property</h6>
+                        <hr class="mt-0">
+                        <p><a href="{% url 'properties:property-detail' lead.related_property.id %}">{{ lead.related_property.title }}</a></p>
+                        <p>{{ lead.related_property.address }}</p>
+                    </div>
+                    {% endif %}
+                    
+                    {% if lead.assigned_to %}
+                    <div class="mb-3">
+                        <h6 class="font-weight-bold">Assigned To</h6>
+                        <hr class="mt-0">
+                        <p>{{ lead.assigned_to.get_full_name }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Lead Notes and Activities -->
+        <div class="col-xl-8 col-md-6 mb-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Lead Activities</h6>
+                    <button class="btn btn-sm btn-primary" data-toggle="modal" data-target="#addActivityModal">
+                        <i class="fas fa-plus"></i> Add Activity
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="timeline">
+                        {% for activity in activities %}
+                        <div class="timeline-item">
+                            <div class="timeline-marker {% if activity.activity_type == 'call' %}bg-primary{% elif activity.activity_type == 'email' %}bg-info{% elif activity.activity_type == 'meeting' %}bg-success{% elif activity.activity_type == 'task' %}bg-warning{% else %}bg-secondary{% endif %}">
+                                {% if activity.activity_type == 'call' %}
+                                <i class="fas fa-phone"></i>
+                                {% elif activity.activity_type == 'email' %}
+                                <i class="fas fa-envelope"></i>
+                                {% elif activity.activity_type == 'meeting' %}
+                                <i class="fas fa-handshake"></i>
+                                {% elif activity.activity_type == 'task' %}
+                                <i class="fas fa-tasks"></i>
+                                {% else %}
+                                <i class="fas fa-comment"></i>
+                                {% endif %}
+                            </div>
+                            <div class="timeline-content">
+                                <div class="d-flex justify-content-between">
+                                    <h6 class="font-weight-bold">{{ activity.get_activity_type_display }}</h6>
+                                    <small class="text-muted">{{ activity.activity_date|date:"M d, Y H:i" }}</small>
+                                </div>
+                                <p>{{ activity.description }}</p>
+                                <small class="text-muted">By: {{ activity.performed_by.get_full_name }}</small>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="text-center py-4">
+                            <p class="text-muted">No activities recorded yet.</p>
+                            <button class="btn btn-sm btn-primary" data-toggle="modal" data-target="#addActivityModal">
+                                <i class="fas fa-plus"></i> Add First Activity
+                            </button>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Lead Notes -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Notes</h6>
+                </div>
+                <div class="card-body">
+                    <form method="post" action="{% url 'leads_frontend:lead-add-note' lead.id %}">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <textarea name="description" class="form-control" rows="3" placeholder="Add a note about this lead..."></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Save Note</button>
+                    </form>
+                    
+                    <hr>
+                    
+                    <div class="notes-list">
+                        {% for note in notes %}
+                        <div class="note-item mb-3">
+                            <div class="d-flex justify-content-between">
+                                <h6 class="font-weight-bold">{{ note.performed_by.get_full_name }}</h6>
+                                <small class="text-muted">{{ note.activity_date|date:"M d, Y H:i" }}</small>
+                            </div>
+                            <p>{{ note.description }}</p>
+                        </div>
+                        {% empty %}
+                        <p class="text-muted text-center">No notes added yet.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Schedule Follow-up Modal -->
+<div class="modal fade" id="scheduleFollowUpModal" tabindex="-1" role="dialog" aria-labelledby="scheduleFollowUpModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="scheduleFollowUpModalLabel">Schedule Follow-up</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form method="post" action="{% url 'leads_frontend:lead-schedule-follow-up' lead.id %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="next_follow_up">Follow-up Date</label>
+                        <input type="date" class="form-control" id="next_follow_up" name="next_follow_up" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="follow_up_notes">Notes</label>
+                        <textarea class="form-control" id="follow_up_notes" name="description" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Schedule</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Add Activity Modal -->
+<div class="modal fade" id="addActivityModal" tabindex="-1" role="dialog" aria-labelledby="addActivityModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addActivityModalLabel">Add Activity</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form method="post" action="{% url 'leads_frontend:lead-add-activity' lead.id %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="activity_type">Activity Type</label>
+                        <select class="form-control" id="activity_type" name="activity_type" required>
+                            <option value="call">Call</option>
+                            <option value="email">Email</option>
+                            <option value="meeting">Meeting</option>
+                            <option value="task">Task</option>
+                            <option value="note">Note</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="activity_date">Activity Date</label>
+                        <input type="datetime-local" class="form-control" id="activity_date" name="activity_date" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="activity_description">Description</label>
+                        <textarea class="form-control" id="activity_description" name="description" rows="3" required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Activity</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Update Status Modal -->
+<div class="modal fade" id="updateStatusModal" tabindex="-1" role="dialog" aria-labelledby="updateStatusModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="updateStatusModalLabel">Update Lead Status</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form method="post" action="{% url 'leads_frontend:lead-update-status' lead.id %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="status">New Status</label>
+                        <select class="form-control" id="status" name="status" required>
+                            <option value="new" {% if lead.status == 'new' %}selected{% endif %}>New</option>
+                            <option value="contacted" {% if lead.status == 'contacted' %}selected{% endif %}>Contacted</option>
+                            <option value="qualified" {% if lead.status == 'qualified' %}selected{% endif %}>Qualified</option>
+                            <option value="proposal" {% if lead.status == 'proposal' %}selected{% endif %}>Proposal</option>
+                            <option value="negotiation" {% if lead.status == 'negotiation' %}selected{% endif %}>Negotiation</option>
+                            <option value="converted" {% if lead.status == 'converted' %}selected{% endif %}>Converted</option>
+                            <option value="lost" {% if lead.status == 'lost' %}selected{% endif %}>Lost</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="status_notes">Notes</label>
+                        <textarea class="form-control" id="status_notes" name="notes" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Update Status</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .timeline {
+        position: relative;
+        padding: 20px 0;
+    }
+    
+    .timeline-item {
+        position: relative;
+        display: flex;
+        margin-bottom: 20px;
+    }
+    
+    .timeline-marker {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        margin-right: 15px;
+        flex-shrink: 0;
+    }
+    
+    .timeline-content {
+        background-color: #f8f9fc;
+        border-radius: 5px;
+        padding: 15px;
+        flex-grow: 1;
+    }
+    
+    .note-item {
+        background-color: #f8f9fc;
+        border-radius: 5px;
+        padding: 15px;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        // Set default date for follow-up modal to tomorrow
+        var tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        var dd = String(tomorrow.getDate()).padStart(2, '0');
+        var mm = String(tomorrow.getMonth() + 1).padStart(2, '0');
+        var yyyy = tomorrow.getFullYear();
+        var tomorrowFormatted = yyyy + '-' + mm + '-' + dd;
+        $('#next_follow_up').val(tomorrowFormatted);
+        
+        // Set default datetime for activity modal to now
+        var now = new Date();
+        var nowFormatted = now.toISOString().slice(0, 16);
+        $('#activity_date').val(nowFormatted);
+    });
+</script>
+{% endblock %}

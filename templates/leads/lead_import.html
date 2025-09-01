@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block title %}Import Leads{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Import Leads</h1>
+        <a href="{% url 'leads_frontend:lead-list' %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Leads
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Upload CSV File</h6>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label for="csv_file">Select CSV File</label>
+                            <input type="file" class="form-control-file" id="csv_file" name="csv_file" required accept=".csv">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Import Leads</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">CSV Format Instructions</h6>
+                </div>
+                <div class="card-body">
+                    <p>Your CSV file should have the following columns:</p>
+                    <ul>
+                        <li><strong>First Name</strong> - Required</li>
+                        <li><strong>Last Name</strong> - Required</li>
+                        <li><strong>Email</strong> - Optional</li>
+                        <li><strong>Phone</strong> - Optional</li>
+                        <li><strong>Status</strong> - Optional (New, Contacted, Qualified, etc.)</li>
+                        <li><strong>Source</strong> - Optional (Will be created if doesn't exist)</li>
+                        <li><strong>Inquiry Date</strong> - Optional (YYYY-MM-DD format)</li>
+                        <li><strong>Next Follow-up</strong> - Optional (YYYY-MM-DD format)</li>
+                        <li><strong>Notes</strong> - Optional</li>
+                    </ul>
+                    <a href="{% url 'leads_frontend:lead-export' %}" class="btn btn-info btn-sm">
+                        <i class="fas fa-download"></i> Download Sample CSV
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

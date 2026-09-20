@@ -4,214 +4,152 @@
 {% block title %}Leases - EstateFlow{% endblock %}
 
 {% block content %}
-<!-- Breadcrumb -->
-<nav class="flex px-5 py-3 text-gray-700 bg-gray-50 rounded-lg" aria-label="Breadcrumb">
-    <ol class="inline-flex items-center space-x-1 md:space-x-3">
-        <li class="inline-flex items-center">
-            <a href="{% url 'properties:property_list' %}" class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-blue-600">
-                <svg class="w-3 h-3 mr-2.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="m19.707 9.293-2-2-7-7a1 1 0 0 0-1.414 0l-7 7-2 2a1 1 0 0 0 1.414 1.414L2 10.414V18a2 2 0 0 0 2 2h3a1 1 0 0 0 1-1v-4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v4a1 1 0 0 0 1 1h3a2 2 0 0 0 2-2v-7.586l.293.293a1 1 0 0 0 1.414-1.414Z"/>
-                </svg>
-                Dashboard
-            </a>
-        </li>
-        <li aria-current="page">
-            <div class="flex items-center">
-                <svg class="w-3 h-3 text-gray-400 mx-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
-                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 9 4-4-4-4"/>
-                </svg>
-                <span class="ml-1 text-sm font-medium text-gray-500 md:ml-2">Leases</span>
-            </div>
-        </li>
-    </ol>
-</nav>
+<div class="container-fluid py-4">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'dashboard:dashboard' %}">Dashboard</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Leases</li>
+        </ol>
+    </nav>
 
-<div class="px-40 flex flex-1 justify-center py-5">
-    <div class="layout-content-container flex flex-col max-w-[960px] flex-1">
-        <!-- Header -->
-        <div class="flex flex-wrap justify-between gap-3 p-4">
-            <div>
-                <h1 class="text-[#0d141c] tracking-light text-[32px] font-bold leading-tight">Leases</h1>
-                <p class="text-[#49739c] text-base font-normal leading-normal">Manage all lease agreements</p>
-            </div>
-            <div class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#2884ef] text-white text-sm font-medium leading-normal">
-                <a href="{% url 'leases:lease_add' %}" class="flex items-center gap-2">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                    </svg>
-                    <span class="truncate">Add Lease</span>
-                </a>
-            </div>
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-1">Leases</h1>
+            <p class="text-muted mb-0">Manage all lease agreements</p>
         </div>
-        
-        <!-- Search Bar -->
-        <div class="p-4">
-            <form method="get" class="flex gap-3">
-                <label class="flex flex-col min-w-40 h-12 w-full">
-                    <div class="flex w-full flex-1 items-stretch rounded-lg h-full">
-                        <div class="text-[#49739c] flex border-none bg-[#e7edf4] items-center justify-center pl-4 rounded-l-lg border-r-0">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" fill="currentColor" viewBox="0 0 256 256">
-                                <path d="M229.66,218.34l-50.07-50.06a88.11,88.11,0,1,0-11.31,11.31l50.06,50.07a8,8,0,0,0,11.32-11.32ZM40,112a72,72,0,1,1,72,72A72.08,72.08,0,0,1,40,112Z"></path>
-                            </svg>
-                        </div>
-                        <input name="search" placeholder="Search leases by lease ID, property, or tenant" class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#0d141c] focus:outline-0 focus:ring-0 border-none bg-[#e7edf4] focus:border-none h-full placeholder:text-[#49739c] px-4 rounded-l-none border-l-0 pl-2 text-base font-normal leading-normal" value="{{ request.GET.search }}">
+        <a href="{% url 'leases:lease_add' %}" class="btn btn-primary d-flex align-items-center">
+            <i class="bi bi-plus-lg me-2"></i>
+            Add Lease
+        </a>
+    </div>
+
+    <!-- Search and Filters -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-2 mb-3">
+                <div class="col-md-9">
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-search"></i></span>
+                        <input type="text" name="search" class="form-control" placeholder="Search leases by lease ID, property, or tenant" value="{{ request.GET.search }}">
                     </div>
-                </label>
-                <button type="submit" class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-4 bg-[#2884ef] text-white text-sm font-medium leading-normal hover:bg-[#1a6bd1] transition-colors">
-                    Search
-                </button>
+                </div>
+                <div class="col-md-3">
+                    <button type="submit" class="btn btn-primary w-100">Search</button>
+                </div>
             </form>
+
+            <div class="btn-group" role="group" aria-label="Status filters">
+                <a href="{% url 'leases:lease_list' %}" class="btn btn-sm {% if not request.GET.status %}btn-primary{% else %}btn-outline-secondary{% endif %}">All</a>
+                <a href="?status=active" class="btn btn-sm {% if request.GET.status == 'active' %}btn-primary{% else %}btn-outline-secondary{% endif %}">Active</a>
+                <a href="?status=expired" class="btn btn-sm {% if request.GET.status == 'expired' %}btn-primary{% else %}btn-outline-secondary{% endif %}">Expired</a>
+                <a href="?status=terminated" class="btn btn-sm {% if request.GET.status == 'terminated' %}btn-primary{% else %}btn-outline-secondary{% endif %}">Terminated</a>
+            </div>
         </div>
-        
-        <!-- Filter Buttons -->
-        <div class="flex gap-3 p-3 flex-wrap pr-4">
-            <a href="{% url 'leases:lease_list' %}" class="flex h-8 shrink-0 items-center justify-center gap-x-2 rounded-lg {% if not request.GET.status %}bg-[#2884ef] text-white{% else %}bg-[#e7edf4] text-[#0d141c]{% endif %} pl-4 pr-4 hover:opacity-80 transition-opacity">
-                <p class="text-sm font-medium leading-normal">All</p>
-            </a>
-            <a href="?status=active" class="flex h-8 shrink-0 items-center justify-center gap-x-2 rounded-lg {% if request.GET.status == 'active' %}bg-[#2884ef] text-white{% else %}bg-[#e7edf4] text-[#0d141c]{% endif %} pl-4 pr-4 hover:opacity-80 transition-opacity">
-                <p class="text-sm font-medium leading-normal">Active</p>
-            </a>
-            <a href="?status=expired" class="flex h-8 shrink-0 items-center justify-center gap-x-2 rounded-lg {% if request.GET.status == 'expired' %}bg-[#2884ef] text-white{% else %}bg-[#e7edf4] text-[#0d141c]{% endif %} pl-4 pr-4 hover:opacity-80 transition-opacity">
-                <p class="text-sm font-medium leading-normal">Expired</p>
-            </a>
-            <a href="?status=terminated" class="flex h-8 shrink-0 items-center justify-center gap-x-2 rounded-lg {% if request.GET.status == 'terminated' %}bg-[#2884ef] text-white{% else %}bg-[#e7edf4] text-[#0d141c]{% endif %} pl-4 pr-4 hover:opacity-80 transition-opacity">
-                <p class="text-sm font-medium leading-normal">Terminated</p>
-            </a>
-        </div>
-        
-        <!-- Leases Table -->
-        <div class="px-4 py-3">
-            <div class="@container">
-                <table class="table-auto w-full">
-                    <thead>
-                        <tr class="border-b border-[#cedbe8]">
-                            <th class="px-4 py-3 text-left text-[#0d141c] text-sm font-medium leading-normal">Lease ID</th>
-                            <th class="px-4 py-3 text-left text-[#0d141c] text-sm font-medium leading-normal">Property</th>
-                            <th class="px-4 py-3 text-left text-[#0d141c] text-sm font-medium leading-normal">Tenant</th>
-                            <th class="px-4 py-3 text-left text-[#0d141c] text-sm font-medium leading-normal">Start Date</th>
-                            <th class="px-4 py-3 text-left text-[#0d141c] text-sm font-medium leading-normal">End Date</th>
-                            <th class="px-4 py-3 text-left text-[#0d141c] text-sm font-medium leading-normal">Monthly Rent</th>
-                            <th class="px-4 py-3 text-left text-[#0d141c] text-sm font-medium leading-normal">Status</th>
-                            <th class="px-4 py-3 text-left text-[#0d141c] text-sm font-medium leading-normal">Actions</th>
+    </div>
+
+    <!-- Leases Table -->
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Lease ID</th>
+                            <th>Property</th>
+                            <th>Tenant</th>
+                            <th>Start Date</th>
+                            <th>End Date</th>
+                            <th>Monthly Rent</th>
+                            <th>Status</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for lease in leases %}
-                        <tr class="border-t border-[#cedbe8] hover:bg-gray-50 transition-colors">
-                            <td class="h-[72px] px-4 py-2 text-[#0d141c] text-sm font-medium leading-normal">
-                                <a href="{% url 'leases:lease_detail' lease.id %}" class="text-[#2884ef] hover:underline">
-                                    {{ lease.lease_id }}
-                                </a>
+                        <tr>
+                            <td>
+                                <a href="{% url 'leases:lease_detail' lease.id %}" class="text-decoration-none">{{ lease.lease_id }}</a>
                             </td>
-                            <td class="h-[72px] px-4 py-2 text-[#49739c] text-sm font-normal leading-normal">
-                                <a href="{% url 'properties:property_detail' lease.property.id %}" class="text-[#2884ef] hover:underline">
-                                    {{ lease.property.address|truncatechars:40 }}
-                                </a>
+                            <td>
+                                <a href="{% url 'properties:property_detail' lease.property.id %}" class="text-decoration-none">{{ lease.property.address|truncatechars:40 }}</a>
                             </td>
-                            <td class="h-[72px] px-4 py-2 text-[#49739c] text-sm font-normal leading-normal">
-                                <a href="{% url 'tenants:tenant_detail' lease.tenant.id %}" class="text-[#2884ef] hover:underline">
-                                    {{ lease.tenant.first_name }} {{ lease.tenant.last_name }}
-                                </a>
+                            <td>
+                                <a href="{% url 'tenants:tenant_detail' lease.tenant.id %}" class="text-decoration-none">{{ lease.tenant.first_name }} {{ lease.tenant.last_name }}</a>
                             </td>
-                            <td class="h-[72px] px-4 py-2 text-[#49739c] text-sm font-normal leading-normal">{{ lease.start_date|date:"M d, Y" }}</td>
-                            <td class="h-[72px] px-4 py-2 text-[#49739c] text-sm font-normal leading-normal">{{ lease.end_date|date:"M d, Y" }}</td>
-                            <td class="h-[72px] px-4 py-2 text-[#0d141c] text-sm font-medium leading-normal">${{ lease.monthly_rent }}</td>
-                            <td class="h-[72px] px-4 py-2 text-sm font-normal leading-normal">
+                            <td>{{ lease.start_date|date:"M d, Y" }}</td>
+                            <td>{{ lease.end_date|date:"M d, Y" }}</td>
+                            <td class="fw-medium">${{ lease.monthly_rent }}</td>
+                            <td>
                                 {% if lease.status == 'active' %}
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Active</span>
+                                    <span class="badge bg-success">Active</span>
                                 {% elif lease.status == 'expired' %}
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">Expired</span>
+                                    <span class="badge bg-danger">Expired</span>
                                 {% elif lease.status == 'terminated' %}
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">Terminated</span>
+                                    <span class="badge bg-secondary">Terminated</span>
                                 {% else %}
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">{{ lease.status|title }}</span>
+                                    <span class="badge bg-secondary">{{ lease.status|title }}</span>
                                 {% endif %}
                             </td>
-                            <td class="h-[72px] px-4 py-2 text-sm font-normal leading-normal">
-                                <div class="flex gap-2">
-                                    <a href="{% url 'leases:lease_detail' lease.id %}" class="text-[#2884ef] hover:text-[#1a6bd1] transition-colors" title="View Details">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-                                        </svg>
+                            <td>
+                                <div class="d-flex gap-2">
+                                    <a href="{% url 'leases:lease_detail' lease.id %}" class="text-primary" title="View Details">
+                                        <i class="bi bi-eye"></i>
                                     </a>
-                                    <a href="{% url 'leases:lease_edit' lease.id %}" class="text-[#2884ef] hover:text-[#1a6bd1] transition-colors" title="Edit Lease">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                                        </svg>
+                                    <a href="{% url 'leases:lease_edit' lease.id %}" class="text-primary" title="Edit Lease">
+                                        <i class="bi bi-pencil"></i>
                                     </a>
                                 </div>
                             </td>
                         </tr>
                         {% empty %}
                         <tr>
-                            <td colspan="8" class="h-[200px] text-center">
-                                <div class="flex flex-col items-center justify-center py-8">
-                                    <svg class="w-12 h-12 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                                    </svg>
-                                    <p class="text-[#49739c] text-base font-normal leading-normal mb-4">No leases found</p>
-                                    <a href="{% url 'leases:lease_add' %}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-[#2884ef] hover:bg-[#1a6bd1] transition-colors">
-                                        Create First Lease
-                                    </a>
-                                </div>
+                            <td colspan="8" class="text-center py-5">
+                                <i class="bi bi-file-earmark-text text-muted mb-3 d-block" style="font-size: 3rem;"></i>
+                                <p class="text-muted mb-3">No leases found</p>
+                                <a href="{% url 'leases:lease_add' %}" class="btn btn-primary">Create First Lease</a>
                             </td>
                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
             </div>
-        </div>
-        
-        <!-- Pagination -->
-        {% if is_paginated %}
-        <div class="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6">
-            <div class="flex flex-1 justify-between sm:hidden">
-                {% if page_obj.has_previous %}
-                    <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}" class="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">Previous</a>
-                {% endif %}
-                {% if page_obj.has_next %}
-                    <a href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}" class="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">Next</a>
-                {% endif %}
-            </div>
-            <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
-                <div>
-                    <p class="text-sm text-gray-700">
-                        Showing <span class="font-medium">{{ page_obj.start_index }}</span> to <span class="font-medium">{{ page_obj.end_index }}</span> of <span class="font-medium">{{ paginator.count }}</span> results
-                    </p>
-                </div>
-                <div>
-                    <nav class="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
+
+            <!-- Pagination -->
+            {% if is_paginated %}
+            <div class="d-flex align-items-center justify-content-between mt-3">
+                <p class="text-muted small mb-0">
+                    Showing {{ page_obj.start_index }} to {{ page_obj.end_index }} of {{ paginator.count }} results
+                </p>
+                <nav aria-label="Leases pagination">
+                    <ul class="pagination mb-0">
                         {% if page_obj.has_previous %}
-                            <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}" class="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0">
-                                <span class="sr-only">Previous</span>
-                                <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                                    <path fill-rule="evenodd" d="M12.79 5.23a.75.75 0 01-.02 1.06L8.832 10l3.938 3.71a.75.75 0 11-1.04 1.08l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 011.06.02z" clip-rule="evenodd" />
-                                </svg>
-                            </a>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">Previous</a>
+                            </li>
                         {% endif %}
-                        
+
                         {% for num in page_obj.paginator.page_range %}
                             {% if page_obj.number == num %}
-                                <span class="relative z-10 inline-flex items-center bg-[#2884ef] px-4 py-2 text-sm font-semibold text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2884ef]">{{ num }}</span>
+                                <li class="page-item active"><span class="page-link">{{ num }}</span></li>
                             {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-                                <a href="?page={{ num }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}" class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0">{{ num }}</a>
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ num }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">{{ num }}</a>
+                                </li>
                             {% endif %}
                         {% endfor %}
-                        
+
                         {% if page_obj.has_next %}
-                            <a href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}" class="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0">
-                                <span class="sr-only">Next</span>
-                                <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                                    <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd" />
-                                </svg>
-                            </a>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">Next</a>
+                            </li>
                         {% endif %}
-                    </nav>
-                </div>
+                    </ul>
+                </nav>
             </div>
+            {% endif %}
         </div>
-        {% endif %}
     </div>
 </div>
 {% endblock %}

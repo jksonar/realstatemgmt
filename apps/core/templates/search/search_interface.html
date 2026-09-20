@@ -3,7 +3,7 @@
 
 {% block title %}Property Search - EstateFlow{% endblock %}
 
-{% block extra_css %}
+{% block styles %}
 <style>
 .search-suggestions {
     position: absolute;
@@ -70,47 +70,40 @@
 {% endblock %}
 
 {% block content %}
-<div class="px-10 py-8">
-    <div class="max-w-7xl mx-auto">
-        <div class="mb-8">
-            <h1 class="text-[#0d141c] text-3xl font-bold leading-tight tracking-[-0.015em] mb-2">Property Search</h1>
-            <p class="text-[#49739c] text-base font-normal leading-normal">Find your perfect property with advanced search and filtering options</p>
-        </div>
-        
-        <!-- Search Form -->
-        <div class="bg-white rounded-xl border border-[#e7edf4] p-6 mb-8 shadow-sm">
+<div class="container-fluid py-4">
+    <div class="mb-4">
+        <h1 class="h3 mb-1">Property Search</h1>
+        <p class="text-muted mb-0">Find your perfect property with advanced search and filtering options</p>
+    </div>
+
+    <!-- Search Form -->
+    <div class="card mb-4">
+        <div class="card-body">
             <form id="searchForm" method="get">
-                <div class="flex flex-col lg:flex-row gap-4 mb-6">
-                    <div class="flex-1 relative">
-                        <div class="flex w-full items-stretch rounded-lg">
-                            <div class="text-[#49739c] flex border border-[#cedbe8] bg-white items-center justify-center pl-4 rounded-l-lg border-r-0">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="20px" height="20px" fill="currentColor" viewBox="0 0 256 256">
-                                    <path d="M229.66,218.34l-50.07-50.06a88.11,88.11,0,1,0-11.31,11.31l50.06,50.07a8,8,0,0,0,11.32-11.32ZM40,112a72,72,0,1,1,72,72A72.08,72.08,0,0,1,40,112Z"></path>
-                                </svg>
+                <div class="row g-2 mb-3">
+                    <div class="col-lg-9">
+                        <div class="search-container">
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-search"></i></span>
+                                <input type="text" class="form-control" id="search" name="search"
+                                       placeholder="Search by address, city, or area..."
+                                       value="{{ request.GET.search }}" autocomplete="off">
                             </div>
-                            <input type="text" 
-                                   class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#0d141c] focus:outline-0 focus:ring-0 border border-[#cedbe8] focus:border-[#0d80f2] h-12 placeholder:text-[#49739c] px-4 rounded-l-none border-l-0 pl-2 text-base font-normal leading-normal" 
-                                   id="search" 
-                                   name="search" 
-                                   placeholder="Search by address, city, or area..."
-                                   value="{{ request.GET.search }}"
-                                   autocomplete="off">
+                            <div id="searchSuggestions" class="search-suggestions"></div>
                         </div>
-                        <div id="searchSuggestions" class="search-suggestions"></div>
                     </div>
-                    <button type="submit" class="flex min-w-[120px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-6 bg-[#0d80f2] text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-[#0b6fd1] transition-colors">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16px" height="16px" fill="currentColor" viewBox="0 0 256 256" class="mr-2">
-                            <path d="M229.66,218.34l-50.07-50.06a88.11,88.11,0,1,0-11.31,11.31l50.06,50.07a8,8,0,0,0,11.32-11.32ZM40,112a72,72,0,1,1,72,72A72.08,72.08,0,0,1,40,112Z"></path>
-                        </svg>
-                        Search
-                    </button>
+                    <div class="col-lg-3">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-search me-2"></i>Search
+                        </button>
+                    </div>
                 </div>
-                
+
                 <!-- Advanced Filters -->
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-                    <div>
-                        <label for="property_type" class="text-[#0d141c] text-sm font-medium leading-normal mb-2 block">Property Type</label>
-                        <select class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#0d141c] focus:outline-0 focus:ring-0 border border-[#cedbe8] focus:border-[#0d80f2] h-12 placeholder:text-[#49739c] px-4 text-base font-normal leading-normal" id="property_type" name="property_type">
+                <div class="row g-3 mb-3">
+                    <div class="col-md-4">
+                        <label for="property_type" class="form-label">Property Type</label>
+                        <select class="form-select" id="property_type" name="property_type">
                             <option value="">All Types</option>
                             <option value="1BHK" {% if request.GET.property_type == '1BHK' %}selected{% endif %}>1BHK</option>
                             <option value="2BHK" {% if request.GET.property_type == '2BHK' %}selected{% endif %}>2BHK</option>
@@ -118,38 +111,38 @@
                             <option value="4BHK" {% if request.GET.property_type == '4BHK' %}selected{% endif %}>4BHK</option>
                         </select>
                     </div>
-                    <div>
-                        <label for="city" class="text-[#0d141c] text-sm font-medium leading-normal mb-2 block">City</label>
-                        <input type="text" class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#0d141c] focus:outline-0 focus:ring-0 border border-[#cedbe8] focus:border-[#0d80f2] h-12 placeholder:text-[#49739c] px-4 text-base font-normal leading-normal" id="city" name="city" value="{{ request.GET.city }}" placeholder="Enter city">
+                    <div class="col-md-4">
+                        <label for="city" class="form-label">City</label>
+                        <input type="text" class="form-control" id="city" name="city" value="{{ request.GET.city }}" placeholder="Enter city">
                     </div>
-                    <div>
-                        <label for="area" class="text-[#0d141c] text-sm font-medium leading-normal mb-2 block">Area</label>
-                        <input type="text" class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#0d141c] focus:outline-0 focus:ring-0 border border-[#cedbe8] focus:border-[#0d80f2] h-12 placeholder:text-[#49739c] px-4 text-base font-normal leading-normal" id="area" name="area" value="{{ request.GET.area }}" placeholder="Enter area">
+                    <div class="col-md-4">
+                        <label for="area" class="form-label">Area</label>
+                        <input type="text" class="form-control" id="area" name="area" value="{{ request.GET.area }}" placeholder="Enter area">
                     </div>
                 </div>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-                    <div>
-                        <label for="status" class="text-[#0d141c] text-sm font-medium leading-normal mb-2 block">Status</label>
-                        <select class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#0d141c] focus:outline-0 focus:ring-0 border border-[#cedbe8] focus:border-[#0d80f2] h-12 placeholder:text-[#49739c] px-4 text-base font-normal leading-normal" id="status" name="status">
+
+                <div class="row g-3 mb-3">
+                    <div class="col-md-4">
+                        <label for="status" class="form-label">Status</label>
+                        <select class="form-select" id="status" name="status">
                             <option value="">All Status</option>
                             <option value="available" {% if request.GET.status == 'available' %}selected{% endif %}>Available</option>
                             <option value="occupied" {% if request.GET.status == 'occupied' %}selected{% endif %}>Occupied</option>
                             <option value="maintenance" {% if request.GET.status == 'maintenance' %}selected{% endif %}>Maintenance</option>
                         </select>
                     </div>
-                    <div>
-                        <label for="furnished_type" class="text-[#0d141c] text-sm font-medium leading-normal mb-2 block">Furnished Type</label>
-                        <select class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#0d141c] focus:outline-0 focus:ring-0 border border-[#cedbe8] focus:border-[#0d80f2] h-12 placeholder:text-[#49739c] px-4 text-base font-normal leading-normal" id="furnished_type" name="furnished_type">
+                    <div class="col-md-4">
+                        <label for="furnished_type" class="form-label">Furnished Type</label>
+                        <select class="form-select" id="furnished_type" name="furnished_type">
                             <option value="">All Types</option>
                             <option value="furnished" {% if request.GET.furnished_type == 'furnished' %}selected{% endif %}>Furnished</option>
                             <option value="semi-furnished" {% if request.GET.furnished_type == 'semi-furnished' %}selected{% endif %}>Semi-Furnished</option>
                             <option value="unfurnished" {% if request.GET.furnished_type == 'unfurnished' %}selected{% endif %}>Unfurnished</option>
                         </select>
                     </div>
-                    <div>
-                        <label for="ordering" class="text-[#0d141c] text-sm font-medium leading-normal mb-2 block">Sort By</label>
-                        <select class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#0d141c] focus:outline-0 focus:ring-0 border border-[#cedbe8] focus:border-[#0d80f2] h-12 placeholder:text-[#49739c] px-4 text-base font-normal leading-normal" id="ordering" name="ordering">
+                    <div class="col-md-4">
+                        <label for="ordering" class="form-label">Sort By</label>
+                        <select class="form-select" id="ordering" name="ordering">
                             <option value="">Default</option>
                             <option value="rent_amount" {% if request.GET.ordering == 'rent_amount' %}selected{% endif %}>Rent (Low to High)</option>
                             <option value="-rent_amount" {% if request.GET.ordering == '-rent_amount' %}selected{% endif %}>Rent (High to Low)</option>
@@ -159,53 +152,44 @@
                         </select>
                     </div>
                 </div>
-                
-                <div class="flex flex-wrap gap-3">
-                    <button type="submit" class="flex min-w-[100px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#0d80f2] text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-[#0b6fd1] transition-colors">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16px" height="16px" fill="currentColor" viewBox="0 0 256 256" class="mr-2">
-                            <path d="M229.66,218.34l-50.07-50.06a88.11,88.11,0,1,0-11.31,11.31l50.06,50.07a8,8,0,0,0,11.32-11.32ZM40,112a72,72,0,1,1,72,72A72.08,72.08,0,0,1,40,112Z"></path>
-                        </svg>
-                        Search
+
+                <div class="d-flex flex-wrap gap-2">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-search me-2"></i>Search
                     </button>
-                    <button type="button" class="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#f0f2f5] text-[#0d141c] text-sm font-bold leading-normal tracking-[0.015em] hover:bg-[#e7edf4] transition-colors" id="clearSearch">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16px" height="16px" fill="currentColor" viewBox="0 0 256 256" class="mr-2">
-                            <path d="M205.66,194.34a8,8,0,0,1-11.32,11.32L128,139.31,61.66,205.66a8,8,0,0,1-11.32-11.32L116.69,128,50.34,61.66A8,8,0,0,1,61.66,50.34L128,116.69l66.34-66.35a8,8,0,0,1,11.32,11.32L139.31,128Z"></path>
-                        </svg>
-                        Clear
+                    <button type="button" class="btn btn-outline-secondary" id="clearSearch">
+                        <i class="bi bi-x-lg me-2"></i>Clear
                     </button>
-                    <button type="button" class="flex min-w-[120px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#f0f2f5] text-[#0d141c] text-sm font-bold leading-normal tracking-[0.015em] hover:bg-[#e7edf4] transition-colors" id="saveSearch">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16px" height="16px" fill="currentColor" viewBox="0 0 256 256" class="mr-2">
-                            <path d="M184,32H72A16,16,0,0,0,56,48V224a8,8,0,0,0,12.24,6.78L128,193.43l59.77,37.35A8,8,0,0,0,200,224V48A16,16,0,0,0,184,32Z"></path>
-                        </svg>
-                        Save Search
+                    <button type="button" class="btn btn-outline-secondary" id="saveSearch">
+                        <i class="bi bi-bookmark me-2"></i>Save Search
                     </button>
                 </div>
             </form>
-            
+
             <!-- Search History -->
-            <div class="mt-6" id="searchHistorySection">
-                <h6 class="text-[#49739c] text-sm font-medium leading-normal mb-3">Recent Searches</h6>
+            <div class="mt-4" id="searchHistorySection">
+                <h6 class="text-muted mb-2">Recent Searches</h6>
                 <div id="searchHistory" class="mb-3"></div>
             </div>
-            
+
             <!-- Popular Terms -->
-            <div class="mt-4" id="popularTermsSection">
-                <h6 class="text-[#49739c] text-sm font-medium leading-normal mb-3">Popular Searches</h6>
+            <div class="mt-3" id="popularTermsSection">
+                <h6 class="text-muted mb-2">Popular Searches</h6>
                 <div id="popularTerms"></div>
             </div>
         </div>
     </div>
-    
+
     <!-- Search Results -->
-    <div class="mt-8" id="searchResults" style="display: none;">
-        <div class="bg-white rounded-xl border border-[#e7edf4] shadow-sm">
-            <div class="flex justify-between items-center p-6 border-b border-[#e7edf4]">
-                <h2 class="text-[#0d141c] text-xl font-bold leading-tight tracking-[-0.015em]">Search Results</h2>
-                <span id="resultsCount" class="bg-[#0d80f2] text-white px-3 py-1 rounded-full text-sm font-medium"></span>
+    <div class="mt-4" id="searchResults" style="display: none;">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Search Results</h5>
+                <span id="resultsCount" class="badge bg-primary"></span>
             </div>
-            <div class="p-6">
-                <div id="propertiesList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
-                <div id="pagination" class="flex justify-center mt-8"></div>
+            <div class="card-body">
+                <div id="propertiesList" class="row g-4"></div>
+                <div id="pagination" class="d-flex justify-content-center mt-4"></div>
             </div>
         </div>
     </div>
@@ -236,23 +220,25 @@
 </div>
 {% endblock %}
 
-{% block extra_js %}
+{% block scripts %}
+{{ block.super }}
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
 <script>
 $(document).ready(function() {
     let searchTimeout;
     let currentQuery = '';
-    
+
     // Load initial data
     loadSearchHistory();
     loadPopularTerms();
-    
+
     // Search input with autocomplete
     $('#search').on('input', function() {
         const query = $(this).val().trim();
         currentQuery = query;
-        
+
         clearTimeout(searchTimeout);
-        
+
         if (query.length >= 2) {
             searchTimeout = setTimeout(() => {
                 if (currentQuery === query) {
@@ -263,69 +249,69 @@ $(document).ready(function() {
             $('#searchSuggestions').hide();
         }
     });
-    
+
     // Hide suggestions when clicking outside
     $(document).on('click', function(e) {
         if (!$(e.target).closest('.search-container').length) {
             $('#searchSuggestions').hide();
         }
     });
-    
+
     // Handle suggestion clicks
     $(document).on('click', '.search-suggestion-item', function() {
         const suggestion = $(this).text();
         $('#search').val(suggestion);
         $('#searchSuggestions').hide();
     });
-    
+
     // Handle search history clicks
     $(document).on('click', '.search-history-item', function() {
         const query = $(this).text();
         $('#search').val(query);
         $('#searchForm').submit();
     });
-    
+
     // Handle popular terms clicks
     $(document).on('click', '.popular-term', function() {
         const term = $(this).text();
         $('#search').val(term);
         $('#searchForm').submit();
     });
-    
+
     // Clear search
     $('#clearSearch').on('click', function() {
         $('#searchForm')[0].reset();
         $('#searchResults').hide();
     });
-    
+
     // Save search
     $('#saveSearch').on('click', function() {
         $('#saveSearchModal').modal('show');
     });
-    
+
     $('#confirmSaveSearch').on('click', function() {
         const searchName = $('#searchName').val().trim();
         if (searchName) {
             saveCurrentSearch(searchName);
         }
     });
-    
+
     // Handle form submission
     $('#searchForm').on('submit', function(e) {
         e.preventDefault();
         performSearch();
     });
-    
+
     function loadAutocomplete(query) {
         $.get('/search-history/autocomplete/', { q: query })
             .done(function(data) {
                 const suggestions = data.autocomplete;
                 let html = '';
-                
+
                 suggestions.forEach(function(suggestion) {
                     html += `<div class="search-suggestion-item">${suggestion}</div>`;
                 });
-                
+
                 if (html) {
                     $('#searchSuggestions').html(html).show();
                 } else {
@@ -336,7 +322,7 @@ $(document).ready(function() {
                 $('#searchSuggestions').hide();
             });
     }
-    
+
     function loadSearchHistory() {
         $.get('/search-history/recent/', { limit: 10 })
             .done(function(data) {
@@ -344,7 +330,7 @@ $(document).ready(function() {
                 data.forEach(function(item) {
                     html += `<span class="search-history-item">${item.query}</span>`;
                 });
-                
+
                 if (html) {
                     $('#searchHistory').html(html);
                     $('#searchHistorySection').show();
@@ -353,7 +339,7 @@ $(document).ready(function() {
                 }
             });
     }
-    
+
     function loadPopularTerms() {
         $.get('/search-history/popular_terms/')
             .done(function(data) {
@@ -361,7 +347,7 @@ $(document).ready(function() {
                 data.popular_terms.slice(0, 10).forEach(function(item) {
                     html += `<span class="popular-term">${item.query}</span>`;
                 });
-                
+
                 if (html) {
                     $('#popularTerms').html(html);
                     $('#popularTermsSection').show();
@@ -370,16 +356,16 @@ $(document).ready(function() {
                 }
             });
     }
-    
+
     function performSearch() {
         const formData = $('#searchForm').serialize();
-        
+
         $.get('/properties/search/', formData)
             .done(function(data) {
                 displaySearchResults(data.results);
                 $('#resultsCount').text(`${data.count} properties found`);
                 $('#searchResults').show();
-                
+
                 // Reload search history to include new search
                 setTimeout(loadSearchHistory, 500);
             })
@@ -387,10 +373,10 @@ $(document).ready(function() {
                 alert('Search failed. Please try again.');
             });
     }
-    
+
     function displaySearchResults(properties) {
         let html = '';
-        
+
         properties.forEach(function(property) {
             html += `
                 <div class="col-md-6 col-lg-4 mb-4">
@@ -415,10 +401,10 @@ $(document).ready(function() {
                 </div>
             `;
         });
-        
+
         $('#propertiesList').html(html);
     }
-    
+
     function saveCurrentSearch(name) {
         const queryParams = {};
         $('#searchForm').serializeArray().forEach(function(item) {
@@ -426,7 +412,7 @@ $(document).ready(function() {
                 queryParams[item.name] = item.value;
             }
         });
-        
+
         $.post('/saved-searches/', {
             name: name,
             query_params: JSON.stringify(queryParams),

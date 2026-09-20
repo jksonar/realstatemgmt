@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block title %}Delete Lead{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Delete Lead</h1>
+        <a href="{% url 'leads_frontend:lead-detail' lead.id %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Lead
+        </a>
+    </div>
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Confirm Deletion</h6>
+        </div>
+        <div class="card-body">
+            <div class="alert alert-danger">
+                <h5>Are you sure you want to delete this lead?</h5>
+                <p>You are about to delete the lead <strong>{{ lead.first_name }} {{ lead.last_name }}</strong>. This action cannot be undone.</p>
+                <p>All associated activities and notes will also be deleted.</p>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header">
+                    Lead Information
+                </div>
+                <div class="card-body">
+                    <p><strong>Name:</strong> {{ lead.first_name }} {{ lead.last_name }}</p>
+                    <p><strong>Email:</strong> {{ lead.email|default:"Not provided" }}</p>
+                    <p><strong>Phone:</strong> {{ lead.phone|default:"Not provided" }}</p>
+                    <p><strong>Status:</strong> {{ lead.get_status_display }}</p>
+                    <p><strong>Source:</strong> {{ lead.source.name }}</p>
+                    <p><strong>Inquiry Date:</strong> {{ lead.inquiry_date|date:"F d, Y" }}</p>
+                </div>
+            </div>
+            
+            <form method="post">
+                {% csrf_token %}
+                <div class="text-right">
+                    <a href="{% url 'leads_frontend:lead-detail' lead.id %}" class="btn btn-secondary mr-2">Cancel</a>
+                    <button type="submit" class="btn btn-danger">Delete Lead</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

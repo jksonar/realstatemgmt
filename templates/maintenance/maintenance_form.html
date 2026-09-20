@@ -1,0 +1,360 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{% if form.instance.pk %}Edit Maintenance Request{% else %}New Maintenance Request{% endif %}{% endblock %}
+
+{% block page_title %}{% if form.instance.pk %}Edit Maintenance Request #{{ form.instance.maintenance_id }}{% else %}Create New Maintenance Request{% endif %}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">{% if form.instance.pk %}Edit Request Details{% else %}Request Information{% endif %}</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data" novalidate>
+                    {% csrf_token %}
+                    
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {% for error in form.non_field_errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="{{ form.property.id_for_label }}" class="form-label">Property <span class="text-danger">*</span></label>
+                            {{ form.property }}
+                            {% if form.property.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.property.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label for="{{ form.tenant.id_for_label }}" class="form-label">Tenant</label>
+                            {{ form.tenant }}
+                            {% if form.tenant.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.tenant.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">Leave blank if reported by staff</div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label for="{{ form.category.id_for_label }}" class="form-label">Category <span class="text-danger">*</span></label>
+                            {{ form.category }}
+                            {% if form.category.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.category.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label for="{{ form.priority.id_for_label }}" class="form-label">Priority <span class="text-danger">*</span></label>
+                            {{ form.priority }}
+                            {% if form.priority.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.priority.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label for="{{ form.status.id_for_label }}" class="form-label">Status <span class="text-danger">*</span></label>
+                            {{ form.status }}
+                            {% if form.status.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.status.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label for="{{ form.scheduled_date.id_for_label }}" class="form-label">Scheduled Date</label>
+                            {{ form.scheduled_date }}
+                            {% if form.scheduled_date.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.scheduled_date.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">When is the maintenance scheduled to be performed?</div>
+                        </div>
+                        
+                        <div class="col-12">
+                            <label for="{{ form.issue_description.id_for_label }}" class="form-label">Issue Description <span class="text-danger">*</span></label>
+                            {{ form.issue_description }}
+                            {% if form.issue_description.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.issue_description.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">Provide a detailed description of the maintenance issue</div>
+                        </div>
+                        
+                        <div class="col-12">
+                            <label for="{{ form.notes.id_for_label }}" class="form-label">Additional Notes</label>
+                            {{ form.notes }}
+                            {% if form.notes.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.notes.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">Any additional information or special instructions</div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label for="{{ form.vendor.id_for_label }}" class="form-label">Assign Vendor</label>
+                            {{ form.vendor }}
+                            {% if form.vendor.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.vendor.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">Select a vendor to assign to this maintenance request</div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label for="{{ form.cost.id_for_label }}" class="form-label">Cost ($)</label>
+                            {{ form.cost }}
+                            {% if form.cost.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.cost.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">Total cost of the maintenance (if known)</div>
+                        </div>
+                        
+                        <div class="col-12">
+                            <label for="{{ form.cost_details.id_for_label }}" class="form-label">Cost Details</label>
+                            {{ form.cost_details }}
+                            {% if form.cost_details.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.cost_details.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">Breakdown of costs or additional cost information</div>
+                        </div>
+                        
+                        <div class="col-12">
+                            <label for="{{ form.photos.id_for_label }}" class="form-label">Photos</label>
+                            {{ form.photos }}
+                            {% if form.photos.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.photos.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">Upload photos of the maintenance issue (optional, multiple files allowed)</div>
+                        </div>
+                        
+                        {% if form.instance.pk and form.instance.photos.exists %}
+                        <div class="col-12">
+                            <label class="form-label">Current Photos</label>
+                            <div class="row g-3">
+                                {% for photo in form.instance.photos.all %}
+                                <div class="col-md-4">
+                                    <div class="position-relative">
+                                        <img src="{{ photo.image.url }}" alt="Maintenance Photo" class="img-fluid rounded shadow-sm" style="object-fit: cover; height: 150px; width: 100%;">
+                                        <div class="form-check position-absolute top-0 end-0 m-2">
+                                            <input class="form-check-input" type="checkbox" name="delete_photo_{{ photo.id }}" id="delete_photo_{{ photo.id }}">
+                                            <label class="form-check-label" for="delete_photo_{{ photo.id }}">
+                                                <span class="badge bg-danger">Delete</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-primary">
+                            {% if form.instance.pk %}
+                                <i class="fas fa-save me-1"></i> Update Request
+                            {% else %}
+                                <i class="fas fa-plus me-1"></i> Create Request
+                            {% endif %}
+                        </button>
+                        <a href="{% if form.instance.pk %}{% url 'maintenance:maintenance_detail' form.instance.pk %}{% else %}{% url 'maintenance:maintenance_list' %}{% endif %}" class="btn btn-outline-secondary ms-2">
+                            <i class="fas fa-times me-1"></i> Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Maintenance Guidelines</h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <h6 class="alert-heading"><i class="fas fa-info-circle me-2"></i>Important Information</h6>
+                    <hr>
+                    <ul class="mb-0">
+                        <li>Provide as much detail as possible about the issue</li>
+                        <li>Include photos when available to help diagnose the problem</li>
+                        <li>Set the priority level appropriately based on urgency</li>
+                        <li>Assign a vendor if you know who will handle the request</li>
+                        <li>Schedule a date if maintenance has been planned</li>
+                    </ul>
+                </div>
+                
+                <div class="mt-3">
+                    <h6>Priority Levels</h6>
+                    <ul class="list-unstyled">
+                        <li><span class="badge bg-danger me-2">Urgent</span> Immediate attention required (safety hazards, major leaks)</li>
+                        <li class="mt-2"><span class="badge bg-warning me-2">High</span> Should be addressed within 24-48 hours</li>
+                        <li class="mt-2"><span class="badge bg-info me-2">Medium</span> Should be addressed within 3-5 days</li>
+                        <li class="mt-2"><span class="badge bg-secondary me-2">Low</span> Can be scheduled during routine maintenance</li>
+                    </ul>
+                </div>
+                
+                <div class="mt-3">
+                    <h6>Common Categories</h6>
+                    <ul class="list-unstyled">
+                        <li><strong>Plumbing:</strong> Leaks, clogs, water pressure issues</li>
+                        <li><strong>Electrical:</strong> Outlets, lighting, electrical failures</li>
+                        <li><strong>HVAC:</strong> Heating, cooling, ventilation issues</li>
+                        <li><strong>Appliance:</strong> Refrigerator, stove, dishwasher repairs</li>
+                        <li><strong>Structural:</strong> Walls, ceilings, floors, windows</li>
+                        <li><strong>Exterior:</strong> Roof, siding, landscaping, driveway</li>
+                        <li><strong>Pest Control:</strong> Insect or rodent issues</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Property selection affects tenant dropdown
+        const propertySelect = document.querySelector('#id_property');
+        const tenantSelect = document.querySelector('#id_tenant');
+        
+        if (propertySelect && tenantSelect) {
+            propertySelect.addEventListener('change', function() {
+                const propertyId = this.value;
+                if (propertyId) {
+                    // Fetch tenants for this property
+                    fetch(`/api/properties/${propertyId}/tenants/`)
+                        .then(response => response.json())
+                        .then(data => {
+                            // Clear current options except the empty one
+                            while (tenantSelect.options.length > 1) {
+                                tenantSelect.remove(1);
+                            }
+                            
+                            // Add new options
+                            data.forEach(tenant => {
+                                const option = document.createElement('option');
+                                option.value = tenant.id;
+                                option.textContent = `${tenant.first_name} ${tenant.last_name}`;
+                                tenantSelect.appendChild(option);
+                            });
+                        })
+                        .catch(error => console.error('Error fetching tenants:', error));
+                }
+            });
+        }
+        
+        // Image preview for photo uploads
+        const photoInput = document.querySelector('#id_photos');
+        if (photoInput) {
+            photoInput.addEventListener('change', function() {
+                const previewContainer = document.createElement('div');
+                previewContainer.className = 'row g-3 mt-2';
+                previewContainer.id = 'photo-previews';
+                
+                // Remove any existing previews
+                const existingPreview = document.querySelector('#photo-previews');
+                if (existingPreview) {
+                    existingPreview.remove();
+                }
+                
+                if (this.files.length > 0) {
+                    for (const file of this.files) {
+                        const reader = new FileReader();
+                        const previewCol = document.createElement('div');
+                        previewCol.className = 'col-md-4 mb-2';
+                        
+                        reader.onload = function(e) {
+                            const img = document.createElement('img');
+                            img.src = e.target.result;
+                            img.className = 'img-fluid rounded shadow-sm';
+                            img.style = 'object-fit: cover; height: 150px; width: 100%;';
+                            previewCol.appendChild(img);
+                        };
+                        
+                        reader.readAsDataURL(file);
+                        previewContainer.appendChild(previewCol);
+                    }
+                    
+                    photoInput.parentNode.insertBefore(previewContainer, photoInput.nextSibling);
+                }
+            });
+        }
+        
+        // Status change affects other fields
+        const statusSelect = document.querySelector('#id_status');
+        const completedDateField = document.querySelector('#id_completed_date');
+        
+        if (statusSelect && completedDateField) {
+            statusSelect.addEventListener('change', function() {
+                if (this.value === 'completed') {
+                    // Set completed date to today if empty
+                    if (!completedDateField.value) {
+                        const today = new Date().toISOString().split('T')[0];
+                        completedDateField.value = today;
+                    }
+                    completedDateField.parentNode.classList.remove('d-none');
+                } else {
+                    completedDateField.parentNode.classList.add('d-none');
+                }
+            });
+            
+            // Trigger on page load
+            if (statusSelect.value === 'completed') {
+                completedDateField.parentNode.classList.remove('d-none');
+            } else {
+                completedDateField.parentNode.classList.add('d-none');
+            }
+        }
+    });
+</script>
+{% endblock %}

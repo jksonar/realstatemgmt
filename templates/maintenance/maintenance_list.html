@@ -1,0 +1,290 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Maintenance Requests{% endblock %}
+
+{% block page_title %}Maintenance Requests{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-white-50">Open Requests</h6>
+                        <h2 class="mb-0">{{ open_count|default:"0" }}</h2>
+                    </div>
+                    <div class="rounded-circle bg-white bg-opacity-25 p-3">
+                        <i class="fas fa-tools fa-2x text-white"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-white h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-white-50">In Progress</h6>
+                        <h2 class="mb-0">{{ in_progress_count|default:"0" }}</h2>
+                    </div>
+                    <div class="rounded-circle bg-white bg-opacity-25 p-3">
+                        <i class="fas fa-hammer fa-2x text-white"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-white-50">Completed</h6>
+                        <h2 class="mb-0">{{ completed_count|default:"0" }}</h2>
+                    </div>
+                    <div class="rounded-circle bg-white bg-opacity-25 p-3">
+                        <i class="fas fa-check-circle fa-2x text-white"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-danger text-white h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-white-50">Urgent</h6>
+                        <h2 class="mb-0">{{ urgent_count|default:"0" }}</h2>
+                    </div>
+                    <div class="rounded-circle bg-white bg-opacity-25 p-3">
+                        <i class="fas fa-exclamation-triangle fa-2x text-white"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Maintenance Requests</h5>
+        <div>
+            <a href="{% url 'maintenance:maintenance_add' %}" class="btn btn-primary">
+                <i class="fas fa-plus me-1"></i> New Request
+            </a>
+            <button class="btn btn-outline-secondary ms-2" type="button" data-bs-toggle="collapse" data-bs-target="#filterCollapse">
+                <i class="fas fa-filter me-1"></i> Filter
+            </button>
+        </div>
+    </div>
+    
+    <div class="collapse" id="filterCollapse">
+        <div class="card-body border-bottom">
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">Status</label>
+                    <select name="status" class="form-select">
+                        <option value="">All Statuses</option>
+                        <option value="open" {% if request.GET.status == 'open' %}selected{% endif %}>Open</option>
+                        <option value="in_progress" {% if request.GET.status == 'in_progress' %}selected{% endif %}>In Progress</option>
+                        <option value="completed" {% if request.GET.status == 'completed' %}selected{% endif %}>Completed</option>
+                        <option value="cancelled" {% if request.GET.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Priority</label>
+                    <select name="priority" class="form-select">
+                        <option value="">All Priorities</option>
+                        <option value="low" {% if request.GET.priority == 'low' %}selected{% endif %}>Low</option>
+                        <option value="medium" {% if request.GET.priority == 'medium' %}selected{% endif %}>Medium</option>
+                        <option value="high" {% if request.GET.priority == 'high' %}selected{% endif %}>High</option>
+                        <option value="urgent" {% if request.GET.priority == 'urgent' %}selected{% endif %}>Urgent</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Property</label>
+                    <select name="property" class="form-select">
+                        <option value="">All Properties</option>
+                        {% for property in properties %}
+                            <option value="{{ property.id }}" {% if request.GET.property == property.id|stringformat:"i" %}selected{% endif %}>
+                                {{ property.address }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Date Range</label>
+                    <div class="input-group">
+                        <input type="date" name="date_from" class="form-control" value="{{ request.GET.date_from }}" placeholder="From">
+                        <input type="date" name="date_to" class="form-control" value="{{ request.GET.date_to }}" placeholder="To">
+                    </div>
+                </div>
+                <div class="col-12 d-flex justify-content-end">
+                    <button type="submit" class="btn btn-primary me-2">
+                        <i class="fas fa-search me-1"></i> Apply Filters
+                    </button>
+                    <a href="{% url 'maintenance:maintenance_list' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-times me-1"></i> Clear
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div class="card-body">
+        {% if maintenance_list %}
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Property</th>
+                        <th>Issue</th>
+                        <th>Reported By</th>
+                        <th>Date Reported</th>
+                        <th>Priority</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for maintenance in maintenance_list %}
+                    <tr>
+                        <td>{{ maintenance.maintenance_id }}</td>
+                        <td>
+                            <a href="{% url 'properties:property_detail' maintenance.property.pk %}" class="text-decoration-none">
+                                {{ maintenance.property.address }}
+                            </a>
+                        </td>
+                        <td>
+                            <div class="text-truncate" style="max-width: 200px;">
+                                {{ maintenance.issue_description|truncatechars:50 }}
+                            </div>
+                        </td>
+                        <td>
+                            {% if maintenance.tenant %}
+                            <a href="{% url 'tenants:tenant_detail' maintenance.tenant.pk %}" class="text-decoration-none">
+                                {{ maintenance.tenant.first_name }} {{ maintenance.tenant.last_name }}
+                            </a>
+                            {% else %}
+                            <span class="text-muted">Staff</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ maintenance.created_at|date:"M d, Y" }}</td>
+                        <td>
+                            <span class="badge {% if maintenance.priority == 'urgent' %}bg-danger{% elif maintenance.priority == 'high' %}bg-warning{% elif maintenance.priority == 'medium' %}bg-info{% else %}bg-secondary{% endif %}">
+                                {{ maintenance.priority|title }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge {% if maintenance.status == 'open' %}bg-primary{% elif maintenance.status == 'in_progress' %}bg-warning{% elif maintenance.status == 'completed' %}bg-success{% else %}bg-secondary{% endif %}">
+                                {{ maintenance.status|title }}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="btn-group">
+                                <a href="{% url 'maintenance:maintenance_detail' maintenance.pk %}" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{% url 'maintenance:maintenance_edit' maintenance.pk %}" class="btn btn-sm btn-outline-warning">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
+                                    <i class="fas fa-ellipsis-v"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    {% if maintenance.status != 'completed' %}
+                                    <li>
+                                        <a class="dropdown-item" href="{% url 'maintenance:maintenance_update_status' maintenance.pk %}?status=completed">
+                                            <i class="fas fa-check-circle me-2 text-success"></i> Mark as Completed
+                                        </a>
+                                    </li>
+                                    {% endif %}
+                                    {% if maintenance.status == 'open' %}
+                                    <li>
+                                        <a class="dropdown-item" href="{% url 'maintenance:maintenance_update_status' maintenance.pk %}?status=in_progress">
+                                            <i class="fas fa-hammer me-2 text-warning"></i> Mark as In Progress
+                                        </a>
+                                    </li>
+                                    {% endif %}
+                                    <li>
+                                        <a class="dropdown-item" href="{% url 'maintenance:maintenance_assign' maintenance.pk %}">
+                                            <i class="fas fa-user-plus me-2 text-primary"></i> Assign Vendor
+                                        </a>
+                                    </li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <a class="dropdown-item text-danger" href="{% url 'maintenance:maintenance_delete' maintenance.pk %}">
+                                            <i class="fas fa-trash-alt me-2"></i> Delete
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        {% if is_paginated %}
+        <nav aria-label="Page navigation" class="mt-4">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page=1{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                        <i class="fas fa-angle-double-left"></i>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                        <i class="fas fa-angle-left"></i>
+                    </a>
+                </li>
+                {% endif %}
+                
+                {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                        <li class="page-item active"><a class="page-link" href="#">{{ num }}</a></li>
+                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ num }}</a>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                        <i class="fas fa-angle-right"></i>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                        <i class="fas fa-angle-double-right"></i>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+        
+        {% else %}
+        <div class="text-center py-5">
+            <div class="mb-4">
+                <i class="fas fa-tools fa-4x text-muted"></i>
+            </div>
+            <h4>No Maintenance Requests Found</h4>
+            <p class="text-muted">There are no maintenance requests matching your criteria.</p>
+            <a href="{% url 'maintenance:maintenance_add' %}" class="btn btn-primary mt-3">
+                <i class="fas fa-plus me-1"></i> Create New Request
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

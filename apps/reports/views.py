@@ -1,0 +1,645 @@
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+from django.http import HttpResponse
+from django.db.models import Sum, Count, Q, F, ExpressionWrapper, FloatField
+from django.utils import timezone
+from datetime import timedelta, datetime
+import json
+import calendar
+
+from apps.properties.models import Property
+from apps.tenants.models import Tenant
+from apps.leases.models import Lease
+from apps.payments.models import Payment
+from apps.maintenance.models import MaintenanceRequest
+
+@login_required
+def report_list(request):
+    """View for listing available reports"""
+    return render(request, 'reports/report_list.html')
+
+@login_required
+def financial_report(request):
+    """View for financial reports with filtering by period"""
+    # Get date range based on period parameter
+    period = request.GET.get('period', 'month')
+    today = timezone.now().date()
+    
+    # Set default date range based on period
+    if period == 'month':
+        start_date = today.replace(day=1)
+        end_date = (today.replace(day=1) + timedelta(days=32)).replace(day=1) - timedelta(days=1)
+        period_label = f"{start_date.strftime('%B %Y')}"
+        
+        # Previous period for comparison
+        prev_start_date = (start_date - timedelta(days=1)).replace(day=1)
+        prev_end_date = start_date - timedelta(days=1)
+    elif period == 'quarter':
+        current_quarter = (today.month - 1) // 3 + 1
+        start_date = datetime(today.year, 3 * current_quarter - 2, 1).date()
+        end_date = datetime(today.year, 3 * current_quarter + 1, 1).date() - timedelta(days=1)
+        if 3 * current_quarter + 1 > 12:
+            end_date = datetime(today.year + 1, 1, 1).date() - timedelta(days=1)
+        period_label = f"Q{current_quarter} {today.year}"
+        
+        # Previous quarter for comparison
+        prev_quarter = current_quarter - 1 if current_quarter > 1 else 4
+        prev_year = today.year if current_quarter > 1 else today.year - 1
+        prev_start_date = datetime(prev_year, 3 * prev_quarter - 2, 1).date()
+        prev_end_date = datetime(prev_year, 3 * prev_quarter + 1, 1).date() - timedelta(days=1)
+        if 3 * prev_quarter + 1 > 12:
+            prev_end_date = datetime(prev_year + 1, 1, 1).date() - timedelta(days=1)
+    elif period == 'year':
+        start_date = datetime(today.year, 1, 1).date()
+        end_date = datetime(today.year, 12, 31).date()
+        period_label = f"{today.year}"
+        
+        # Previous year for comparison
+        prev_start_date = datetime(today.year - 1, 1, 1).date()
+        prev_end_date = datetime(today.year - 1, 12, 31).date()
+    elif period == 'custom':
+        try:
+            start_date = datetime.strptime(request.GET.get('start_date'), '%Y-%m-%d').date()
+            end_date = datetime.strptime(request.GET.get('end_date'), '%Y-%m-%d').date()
+            period_label = f"{start_date.strftime('%b %d, %Y')} - {end_date.strftime('%b %d, %Y')}"
+            
+            # Previous period with same duration
+            duration = (end_date - start_date).days
+            prev_end_date = start_date - timedelta(days=1)
+            prev_start_date = prev_end_date - timedelta(days=duration)
+        except (ValueError, TypeError):
+            # Default to current month if dates are invalid
+            start_date = today.replace(day=1)
+            end_date = (today.replace(day=1) + timedelta(days=32)).replace(day=1) - timedelta(days=1)
+            period_label = f"{start_date.strftime('%B %Y')}"
+            
+            # Previous period for comparison
+            prev_start_date = (start_date - timedelta(days=1)).replace(day=1)
+            prev_end_date = start_date - timedelta(days=1)
+    else:
+        # Default to current month
+        start_date = today.replace(day=1)
+        end_date = (today.replace(day=1) + timedelta(days=32)).replace(day=1) - timedelta(days=1)
+        period_label = f"{start_date.strftime('%B %Y')}"
+        
+        # Previous period for comparison
+        prev_start_date = (start_date - timedelta(days=1)).replace(day=1)
+        prev_end_date = start_date - timedelta(days=1)
+    
+    # Calculate financial metrics for current period
+    total_revenue = Payment.objects.filter(
+        status='paid',
+        payment_date__range=[start_date, end_date]
+    ).aggregate(total=Sum('amount'))['total'] or 0
+    
+    total_expenses = MaintenanceRequest.objects.filter(
+        status='completed',
+        updated_at__range=[start_date, end_date]
+    ).aggregate(total=Sum('cost'))['total'] or 0
+    
+    net_income = total_revenue - total_expenses
+    
+    outstanding_balance = Payment.objects.filter(
+        Q(status='pending') | Q(status='overdue'),
+        due_date__range=[start_date, end_date]
+    ).aggregate(total=Sum('amount'))['total'] or 0
+    
+    # Calculate financial metrics for previous period for comparison
+    prev_total_revenue = Payment.objects.filter(
+        status='paid',
+        payment_date__range=[prev_start_date, prev_end_date]
+    ).aggregate(total=Sum('amount'))['total'] or 0
+    
+    prev_total_expenses = MaintenanceRequest.objects.filter(
+        status='completed',
+        updated_at__range=[prev_start_date, prev_end_date]
+    ).aggregate(total=Sum('cost'))['total'] or 0
+    
+    prev_net_income = prev_total_revenue - prev_total_expenses
+    
+    prev_outstanding_balance = Payment.objects.filter(
+        Q(status='pending') | Q(status='overdue'),
+        due_date__range=[prev_start_date, prev_end_date]
+    ).aggregate(total=Sum('amount'))['total'] or 0
+    
+    # Calculate percentage changes
+    revenue_change = round(((total_revenue - prev_total_revenue) / prev_total_revenue * 100) if prev_total_revenue > 0 else 0)
+    expense_change = round(((total_expenses - prev_total_expenses) / prev_total_expenses * 100) if prev_total_expenses > 0 else 0)
+    income_change = round(((net_income - prev_net_income) / prev_net_income * 100) if prev_net_income > 0 else 0)
+    outstanding_change = round(((outstanding_balance - prev_outstanding_balance) / prev_outstanding_balance * 100) if prev_outstanding_balance > 0 else 0)
+    
+    # Payment status breakdown
+    paid_amount = Payment.objects.filter(
+        status='paid',
+        payment_date__range=[start_date, end_date]
+    ).aggregate(total=Sum('amount'))['total'] or 0
+    
+    pending_amount = Payment.objects.filter(
+        status='pending',
+        due_date__range=[start_date, end_date]
+    ).aggregate(total=Sum('amount'))['total'] or 0
+    
+    overdue_amount = Payment.objects.filter(
+        status='overdue',
+        due_date__range=[start_date, end_date]
+    ).aggregate(total=Sum('amount'))['total'] or 0
+    
+    refunded_amount = Payment.objects.filter(
+        status='refunded',
+        payment_date__range=[start_date, end_date]
+    ).aggregate(total=Sum('amount'))['total'] or 0
+    
+    total_payment_amount = paid_amount + pending_amount + overdue_amount + refunded_amount
+    
+    # Calculate payment status percentages
+    paid_percentage = round((paid_amount / total_payment_amount * 100) if total_payment_amount > 0 else 0)
+    pending_percentage = round((pending_amount / total_payment_amount * 100) if total_payment_amount > 0 else 0)
+    overdue_percentage = round((overdue_amount / total_payment_amount * 100) if total_payment_amount > 0 else 0)
+    refunded_percentage = round((refunded_amount / total_payment_amount * 100) if total_payment_amount > 0 else 0)
+    
+    payment_status = {
+        'paid': paid_amount,
+        'pending': pending_amount,
+        'overdue': overdue_amount,
+        'refunded': refunded_amount,
+        'paid_percentage': paid_percentage,
+        'pending_percentage': pending_percentage,
+        'overdue_percentage': overdue_percentage,
+        'refunded_percentage': refunded_percentage
+    }
+    
+    # Expense categories breakdown
+    maintenance_categories = MaintenanceRequest.objects.filter(
+        status='completed',
+        updated_at__range=[start_date, end_date]
+    ).values('category').annotate(total=Sum('cost')).order_by('-total')
+    
+    # Define colors for expense categories
+    category_colors = [
+        '#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b',
+        '#5a5c69', '#858796', '#6f42c1', '#20c9a6', '#fd7e14'
+    ]
+    
+    # Prepare expense categories data for charts
+    expense_categories = []
+    expense_categories_names = []
+    expense_categories_values = []
+    expense_categories_colors = []
+    
+    for i, category in enumerate(maintenance_categories):
+        category_name = category['category'].replace('_', ' ').title() if category['category'] else 'Other'
+        category_amount = category['total'] or 0
+        category_percentage = round((category_amount / total_expenses * 100) if total_expenses > 0 else 0)
+        category_color = category_colors[i % len(category_colors)]
+        
+        expense_categories.append({
+            'name': category_name,
+            'amount': category_amount,
+            'percentage': category_percentage,
+            'color': category_color
+        })
+        
+        expense_categories_names.append(category_name)
+        expense_categories_values.append(category_amount)
+        expense_categories_colors.append(category_color)
+    
+    # Property performance data
+    property_performance = []
+    properties = Property.objects.all()
+    
+    for prop in properties:
+        # Calculate revenue for this property
+        property_revenue = Payment.objects.filter(
+            lease__property=prop,
+            status='paid',
+            payment_date__range=[start_date, end_date]
+        ).aggregate(total=Sum('amount'))['total'] or 0
+        
+        # Calculate expenses for this property
+        property_expenses = MaintenanceRequest.objects.filter(
+            property=prop,
+            status='completed',
+            updated_at__range=[start_date, end_date]
+        ).aggregate(total=Sum('cost'))['total'] or 0
+        
+        # Calculate net income
+        property_net_income = property_revenue - property_expenses
+        
+        # Calculate ROI (Return on Investment)
+        # Assuming property value is stored or can be derived
+        property_value = prop.rent * 12 * 10  # Simple estimation: 10 years of annual rent
+        property_roi = (property_net_income / property_value * 100) if property_value > 0 else 0
+        
+        # Calculate occupancy rate
+        days_in_period = (end_date - start_date).days + 1
+        occupied_days = Lease.objects.filter(
+            property=prop,
+            status='active',
+            start_date__lte=end_date,
+            end_date__gte=start_date
+        ).count() * days_in_period  # Simplified calculation
+        
+        occupancy_rate = round((occupied_days / days_in_period * 100) if days_in_period > 0 else 0)
+        
+        property_performance.append({
+            'property_id': prop.property_id,
+            'address': prop.address,
+            'image': prop.image,
+            'revenue': property_revenue,
+            'expenses': property_expenses,
+            'net_income': property_net_income,
+            'roi': property_roi,
+            'occupancy_rate': occupancy_rate,
+            'status': prop.status
+        })
+    
+    # Sort properties by net income (descending)
+    property_performance = sorted(property_performance, key=lambda x: x['net_income'], reverse=True)
+    
+    # Monthly data for charts
+    months = []
+    monthly_revenue = []
+    monthly_expenses = []
+    monthly_net_income = []
+    
+    # Determine the number of months to show based on the period
+    if period == 'month':
+        num_months = 12  # Show last 12 months
+    elif period == 'quarter':
+        num_months = 12  # Show last 12 months
+    elif period == 'year':
+        num_months = 12  # Show all months in the year
+    else:
+        num_months = min(12, (end_date.year - start_date.year) * 12 + end_date.month - start_date.month + 1)
+    
+    # Generate monthly data
+    for i in range(num_months - 1, -1, -1):
+        if period == 'year':
+            # For yearly report, show all months in the selected year
+            month_date = datetime(today.year, 12 - i, 1).date()
+        else:
+            # For other periods, show the last num_months months
+            month_date = (today.replace(day=1) - timedelta(days=1)).replace(day=1)
+            month_date = month_date - timedelta(days=30 * i)
+        
+        month_end = (month_date.replace(day=1) + timedelta(days=32)).replace(day=1) - timedelta(days=1)
+        
+        # Get month name
+        month_name = month_date.strftime('%b %Y')
+        months.append(month_name)
+        
+        # Get revenue for this month
+        month_revenue = Payment.objects.filter(
+            status='paid',
+            payment_date__range=[month_date, month_end]
+        ).aggregate(total=Sum('amount'))['total'] or 0
+        monthly_revenue.append(month_revenue)
+        
+        # Get expenses for this month
+        month_expenses = MaintenanceRequest.objects.filter(
+            status='completed',
+            updated_at__range=[month_date, month_end]
+        ).aggregate(total=Sum('cost'))['total'] or 0
+        monthly_expenses.append(month_expenses)
+        
+        # Calculate net income
+        month_net_income = month_revenue - month_expenses
+        monthly_net_income.append(month_net_income)
+    
+    context = {
+        'period': period,
+        'period_label': period_label,
+        'start_date': start_date,
+        'end_date': end_date,
+        
+        # Financial summary
+        'total_revenue': total_revenue,
+        'total_expenses': total_expenses,
+        'net_income': net_income,
+        'outstanding_balance': outstanding_balance,
+        
+        # Percentage changes
+        'revenue_change': revenue_change,
+        'expense_change': expense_change,
+        'income_change': income_change,
+        'outstanding_change': outstanding_change,
+        
+        # Payment status
+        'payment_status': payment_status,
+        
+        # Expense categories
+        'expense_categories': expense_categories,
+        'expense_categories_names': json.dumps(expense_categories_names),
+        'expense_categories_values': json.dumps(expense_categories_values),
+        'expense_categories_colors': json.dumps(expense_categories_colors),
+        
+        # Property performance
+        'property_performance': property_performance,
+        
+        # Monthly data for charts
+        'months': json.dumps(months),
+        'monthly_revenue': json.dumps(monthly_revenue),
+        'monthly_expenses': json.dumps(monthly_expenses),
+        'monthly_net_income': json.dumps(monthly_net_income),
+    }
+    
+    return render(request, 'reports/financial_report.html', context)
+
+@login_required
+def financial_dashboard(request):
+    """Generate a comprehensive financial dashboard with interactive charts"""
+    # Get period from request or default to 'month'
+    period = request.GET.get('period', 'month')
+    today = timezone.now().date()
+    
+    # Set default date range based on period
+    if period == 'month':
+        start_date = today.replace(day=1)
+        end_date = (today.replace(day=1) + timedelta(days=32)).replace(day=1) - timedelta(days=1)
+        period_label = f"{start_date.strftime('%B %Y')}"
+        
+        # Previous period for comparison
+        prev_start_date = (start_date - timedelta(days=1)).replace(day=1)
+        prev_end_date = start_date - timedelta(days=1)
+    elif period == 'quarter':
+        current_quarter = (today.month - 1) // 3 + 1
+        start_date = datetime(today.year, 3 * current_quarter - 2, 1).date()
+        end_date = datetime(today.year, 3 * current_quarter + 1, 1).date() - timedelta(days=1)
+        if 3 * current_quarter + 1 > 12:
+            end_date = datetime(today.year + 1, 1, 1).date() - timedelta(days=1)
+        period_label = f"Q{current_quarter} {today.year}"
+        
+        # Previous quarter for comparison
+        prev_quarter = current_quarter - 1 if current_quarter > 1 else 4
+        prev_year = today.year if current_quarter > 1 else today.year - 1
+        prev_start_date = datetime(prev_year, 3 * prev_quarter - 2, 1).date()
+        prev_end_date = datetime(prev_year, 3 * prev_quarter + 1, 1).date() - timedelta(days=1)
+        if 3 * prev_quarter + 1 > 12:
+            prev_end_date = datetime(prev_year + 1, 1, 1).date() - timedelta(days=1)
+    elif period == 'year':
+        start_date = datetime(today.year, 1, 1).date()
+        end_date = datetime(today.year, 12, 31).date()
+        period_label = f"{today.year}"
+        
+        # Previous year for comparison
+        prev_start_date = datetime(today.year - 1, 1, 1).date()
+        prev_end_date = datetime(today.year - 1, 12, 31).date()
+    else:  # Default to month
+        start_date = today.replace(day=1)
+        end_date = (today.replace(day=1) + timedelta(days=32)).replace(day=1) - timedelta(days=1)
+        period_label = f"{start_date.strftime('%B %Y')}"
+        
+        # Previous period for comparison
+        prev_start_date = (start_date - timedelta(days=1)).replace(day=1)
+        prev_end_date = start_date - timedelta(days=1)
+    
+    # Calculate financial metrics for current period
+    total_revenue = Payment.objects.filter(
+        status='paid',
+        payment_date__range=[start_date, end_date]
+    ).aggregate(total=Sum('amount'))['total'] or 0
+    
+    total_expenses = MaintenanceRequest.objects.filter(
+        status='completed',
+        updated_at__range=[start_date, end_date]
+    ).aggregate(total=Sum('cost'))['total'] or 0
+    
+    net_income = total_revenue - total_expenses
+    
+    outstanding_payments = Payment.objects.filter(
+        Q(status='pending') | Q(status='overdue'),
+        due_date__range=[start_date, end_date]
+    ).aggregate(total=Sum('amount'))['total'] or 0
+    
+    # Calculate financial metrics for previous period for comparison
+    prev_total_revenue = Payment.objects.filter(
+        status='paid',
+        payment_date__range=[prev_start_date, prev_end_date]
+    ).aggregate(total=Sum('amount'))['total'] or 0
+    
+    prev_total_expenses = MaintenanceRequest.objects.filter(
+        status='completed',
+        updated_at__range=[prev_start_date, prev_end_date]
+    ).aggregate(total=Sum('cost'))['total'] or 0
+    
+    prev_net_income = prev_total_revenue - prev_total_expenses
+    
+    prev_outstanding_payments = Payment.objects.filter(
+        Q(status='pending') | Q(status='overdue'),
+        due_date__range=[prev_start_date, prev_end_date]
+    ).aggregate(total=Sum('amount'))['total'] or 0
+    
+    # Calculate percentage changes
+    revenue_trend_percentage = round(((total_revenue - prev_total_revenue) / prev_total_revenue * 100) if prev_total_revenue > 0 else 0)
+    outstanding_trend_percentage = round(((outstanding_payments - prev_outstanding_payments) / prev_outstanding_payments * 100) if prev_outstanding_payments > 0 else 0)
+    income_trend_percentage = round(((net_income - prev_net_income) / prev_net_income * 100) if prev_net_income > 0 else 0)
+    
+    # Calculate collection rate
+    total_expected = total_revenue + outstanding_payments
+    collection_rate = round((total_revenue / total_expected * 100) if total_expected > 0 else 0)
+    
+    prev_total_expected = prev_total_revenue + prev_outstanding_payments
+    prev_collection_rate = round((prev_total_revenue / prev_total_expected * 100) if prev_total_expected > 0 else 0)
+    
+    collection_trend_percentage = collection_rate - prev_collection_rate
+    
+    # Payment status breakdown
+    paid_payments_count = Payment.objects.filter(status='paid').count()
+    pending_payments_count = Payment.objects.filter(status='pending').count()
+    overdue_payments_count = Payment.objects.filter(status='overdue').count()
+    total_payments_count = paid_payments_count + pending_payments_count + overdue_payments_count
+    
+    # Calculate payment status percentages
+    paid_percentage = round((paid_payments_count / total_payments_count * 100) if total_payments_count > 0 else 0)
+    pending_percentage = round((pending_payments_count / total_payments_count * 100) if total_payments_count > 0 else 0)
+    overdue_percentage = round((overdue_payments_count / total_payments_count * 100) if total_payments_count > 0 else 0)
+    
+    # Get revenue trend data (last 6 months)
+    end_date_trend = timezone.now().date()
+    start_date_trend = end_date_trend - timedelta(days=180)  # Approximately 6 months
+    
+    revenue_by_month = Payment.objects.filter(
+        payment_date__gte=start_date_trend,
+        payment_date__lte=end_date_trend,
+        status='paid'
+    ).annotate(
+        month=TruncMonth('payment_date')
+    ).values('month').annotate(
+        total=Sum('amount')
+    ).order_by('month')
+    
+    # Create a list of all months in the range
+    revenue_trend_labels = []
+    revenue_trend_data = []
+    months_labels = []
+    income_data = []
+    expenses_data = []
+    
+    current_date = start_date_trend.replace(day=1)
+    while current_date <= end_date_trend:
+        month_name = current_date.strftime('%b %Y')
+        months_labels.append(month_name)
+        
+        # Find if we have revenue data for this month
+        month_revenue = next((item for item in revenue_by_month if item['month'].strftime('%b %Y') == month_name), None)
+        month_revenue_amount = float(month_revenue['total']) if month_revenue else 0
+        
+        # Only add to revenue trend if within the last 6 months
+        if (end_date_trend - current_date).days <= 180:
+            revenue_trend_labels.append(month_name)
+            revenue_trend_data.append(month_revenue_amount)
+        
+        # Add to income data for income vs expenses chart
+        income_data.append(month_revenue_amount)
+        
+        # Get expenses for this month
+        month_end = (current_date.replace(day=28) + timedelta(days=4)).replace(day=1) - timedelta(days=1)
+        month_expenses = MaintenanceRequest.objects.filter(
+            status='completed',
+            updated_at__range=[current_date, month_end]
+        ).aggregate(total=Sum('cost'))['total'] or 0
+        
+        expenses_data.append(float(month_expenses))
+        
+        current_date = (current_date.replace(day=28) + timedelta(days=4)).replace(day=1)  # Move to next month
+    
+    # Get top performing properties
+    top_properties = Property.objects.annotate(
+        total_revenue=Sum('lease__payment__amount', filter=Q(lease__payment__status='paid'))
+    ).exclude(total_revenue=None).order_by('-total_revenue')[:5]
+    
+    top_properties_labels = [prop.address for prop in top_properties]
+    top_properties_data = [float(prop.total_revenue) for prop in top_properties]
+    
+    # Get recent payments
+    recent_payments = Payment.objects.all().order_by('-payment_date')[:10]
+    
+    context = {
+        'period_name': period_label,
+        'total_revenue': total_revenue,
+        'outstanding_payments': outstanding_payments,
+        'collection_rate': collection_rate,
+        'net_income': net_income,
+        'revenue_trend_percentage': revenue_trend_percentage,
+        'outstanding_trend_percentage': outstanding_trend_percentage,
+        'collection_trend_percentage': collection_trend_percentage,
+        'income_trend_percentage': income_trend_percentage,
+        'paid_payments_count': paid_payments_count,
+        'pending_payments_count': pending_payments_count,
+        'overdue_payments_count': overdue_payments_count,
+        'paid_percentage': paid_percentage,
+        'pending_percentage': pending_percentage,
+        'overdue_percentage': overdue_percentage,
+        'revenue_trend_labels': json.dumps(revenue_trend_labels),
+        'revenue_trend_data': json.dumps(revenue_trend_data),
+        'months_labels': json.dumps(months_labels),
+        'income_data': json.dumps(income_data),
+        'expenses_data': json.dumps(expenses_data),
+        'top_properties_labels': json.dumps(top_properties_labels),
+        'top_properties_data': json.dumps(top_properties_data),
+        'recent_payments': recent_payments,
+    }
+    
+    return render(request, 'reports/financial_dashboard.html', context)
+
+@login_required
+def export_financial_report(request):
+    """Export financial report in Excel format"""
+    import pandas as pd
+    from django.http import HttpResponse
+    
+    # Get period from request or default to 'month'
+    period = request.GET.get('period', 'month')
+    today = timezone.now().date()
+    
+    # Set default date range based on period
+    if period == 'month':
+        start_date = today.replace(day=1)
+        end_date = (today.replace(day=1) + timedelta(days=32)).replace(day=1) - timedelta(days=1)
+        period_label = f"Monthly Financial Report - {start_date.strftime('%B %Y')}"
+    elif period == 'quarter':
+        current_quarter = (today.month - 1) // 3 + 1
+        start_date = datetime(today.year, 3 * current_quarter - 2, 1).date()
+        end_date = datetime(today.year, 3 * current_quarter + 1, 1).date() - timedelta(days=1)
+        period_label = f"Quarterly Financial Report - Q{current_quarter} {today.year}"
+    elif period == 'year':
+        start_date = datetime(today.year, 1, 1).date()
+        end_date = datetime(today.year, 12, 31).date()
+        period_label = f"Annual Financial Report - {today.year}"
+    else:  # Default to month
+        start_date = today.replace(day=1)
+        end_date = (today.replace(day=1) + timedelta(days=32)).replace(day=1) - timedelta(days=1)
+        period_label = f"Monthly Financial Report - {start_date.strftime('%B %Y')}"
+    
+    # Get payment data
+    payments = Payment.objects.filter(
+        payment_date__range=[start_date, end_date]
+    ).select_related('lease__property', 'lease__tenant')
+    
+    # Create DataFrame for payments
+    payment_data = []
+    for payment in payments:
+        payment_data.append({
+            'Payment ID': payment.payment_id,
+            'Property': payment.lease.property.address,
+            'Tenant': f"{payment.lease.tenant.first_name} {payment.lease.tenant.last_name}",
+            'Amount': payment.amount,
+            'Date': payment.payment_date,
+            'Type': payment.payment_type,
+            'Status': payment.status
+        })
+    
+    payments_df = pd.DataFrame(payment_data)
+    
+    # Get maintenance expense data
+    maintenance_requests = MaintenanceRequest.objects.filter(
+        created_at__range=[start_date, end_date],
+        status__in=['completed', 'in_progress']
+    ).select_related('property')
+    
+    # Create DataFrame for maintenance expenses
+    expense_data = []
+    for request in maintenance_requests:
+        expense_data.append({
+            'Request ID': request.request_id,
+            'Property': request.property.address,
+            'Description': request.description,
+            'Cost': request.cost,
+            'Date': request.created_at,
+            'Status': request.status
+        })
+    
+    expenses_df = pd.DataFrame(expense_data)
+    
+    # Calculate summary metrics
+    total_revenue = payments_df['Amount'].sum() if not payments_df.empty else 0
+    paid_revenue = payments_df[payments_df['Status'] == 'paid']['Amount'].sum() if not payments_df.empty else 0
+    pending_revenue = payments_df[payments_df['Status'] == 'pending']['Amount'].sum() if not payments_df.empty else 0
+    overdue_revenue = payments_df[payments_df['Status'] == 'overdue']['Amount'].sum() if not payments_df.empty else 0
+    total_expenses = expenses_df['Cost'].sum() if not expenses_df.empty else 0
+    net_income = paid_revenue - total_expenses
+    
+    # Create summary DataFrame
+    summary_data = {
+        'Metric': ['Total Revenue', 'Paid Revenue', 'Pending Revenue', 'Overdue Revenue', 'Total Expenses', 'Net Income'],
+        'Amount': [total_revenue, paid_revenue, pending_revenue, overdue_revenue, total_expenses, net_income]
+    }
+    summary_df = pd.DataFrame(summary_data)
+    
+    # Create Excel writer
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = f'attachment; filename="{period_label}.xlsx"'
+    
+    with pd.ExcelWriter(response, engine='openpyxl') as writer:
+        summary_df.to_excel(writer, sheet_name='Summary', index=False)
+        if not payments_df.empty:
+            payments_df.to_excel(writer, sheet_name='Payments', index=False)
+        if not expenses_df.empty:
+            expenses_df.to_excel(writer, sheet_name='Expenses', index=False)
+    
+    return response
+
+@login_required
+def custom_report_builder(request):
+    """View for custom report builder"""
+    return render(request, 'reports/custom_report_builder.html')

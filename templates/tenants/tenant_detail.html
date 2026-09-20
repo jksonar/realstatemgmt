@@ -1,0 +1,134 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Tenant Details{% endblock %}
+
+{% block page_title %}Tenant Details{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">{{ tenant.first_name }} {{ tenant.last_name }}</h5>
+                <div>
+                    <a href="{% url 'tenants:tenant_documents' tenant.pk %}" class="btn btn-sm btn-primary"><i class="fas fa-file-upload me-1"></i> Documents</a>
+                    <a href="{% url 'tenants:tenant_edit' tenant.pk %}" class="btn btn-sm btn-warning"><i class="fas fa-edit me-1"></i> Edit</a>
+                    <a href="{% url 'tenants:tenant_list' %}" class="btn btn-sm btn-secondary"><i class="fas fa-arrow-left me-1"></i> Back</a>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <h6 class="text-muted mb-3">Personal Information</h6>
+                        <div class="mb-3">
+                            <label class="form-label text-muted small">Tenant ID</label>
+                            <p class="mb-0 fw-medium">{{ tenant.tenant_id }}</p>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-muted small">Full Name</label>
+                            <p class="mb-0 fw-medium">{{ tenant.first_name }} {{ tenant.last_name }}</p>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-muted small">Email Address</label>
+                            <p class="mb-0 fw-medium">{{ tenant.email }}</p>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-muted small">Phone Number</label>
+                            <p class="mb-0 fw-medium">{{ tenant.phone }}</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-muted mb-3">Additional Information</h6>
+                        <div class="mb-3">
+                            <label class="form-label text-muted small">Address</label>
+                            <p class="mb-0 fw-medium">{{ tenant.address }}</p>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-muted small">ID Proof Type</label>
+                            <p class="mb-0 fw-medium">{{ tenant.id_proof_type }}</p>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-muted small">ID Proof Number</label>
+                            <p class="mb-0 fw-medium">{{ tenant.id_proof_number }}</p>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-muted small">Created On</label>
+                            <p class="mb-0 fw-medium">{{ tenant.created_at|date:"F d, Y" }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Active Leases</h5>
+            </div>
+            <div class="card-body">
+                {% if tenant.lease_set.exists %}
+                    <ul class="list-group list-group-flush">
+                    {% for lease in tenant.lease_set.all %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center p-3">
+                            <div>
+                                <h6 class="mb-1">{{ lease.property.address }}</h6>
+                                <p class="small text-muted mb-0">{{ lease.start_date|date:"M d, Y" }} - {{ lease.end_date|date:"M d, Y" }}</p>
+                            </div>
+                            <a href="{% url 'leases:lease_detail' lease.pk %}" class="btn btn-sm btn-outline-primary"><i class="fas fa-eye"></i></a>
+                        </li>
+                    {% endfor %}
+                    </ul>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-file-contract fa-2x text-muted mb-3"></i>
+                        <p class="mb-0">No active leases found</p>
+                        <a href="{% url 'leases:lease_add' %}?tenant={{ tenant.pk }}" class="btn btn-sm btn-primary mt-3">Create Lease</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Recent Payments</h5>
+            </div>
+            <div class="card-body">
+                {% if tenant.lease_set.exists %}
+                    {% with recent_payments=tenant.lease_set.first.payment_set.all|slice:":5" %}
+                    {% if recent_payments %}
+                        <ul class="list-group list-group-flush">
+                        {% for payment in recent_payments %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center p-3">
+                                <div>
+                                    <h6 class="mb-1">${{ payment.amount }}</h6>
+                                    <p class="small text-muted mb-0">{{ payment.payment_date|date:"M d, Y" }}</p>
+                                </div>
+                                <span class="badge {% if payment.status == 'paid' %}bg-success{% elif payment.status == 'pending' %}bg-warning{% else %}bg-danger{% endif %}">{{ payment.status }}</span>
+                            </li>
+                        {% endfor %}
+                        </ul>
+                        <div class="text-center mt-3">
+                            <a href="{% url 'payments:payment_list' %}?tenant={{ tenant.pk }}" class="btn btn-sm btn-outline-primary">View All Payments</a>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-money-bill-wave fa-2x text-muted mb-3"></i>
+                            <p class="mb-0">No payment records found</p>
+                            <a href="{% url 'payments:payment_add' %}?tenant={{ tenant.pk }}" class="btn btn-sm btn-primary mt-3">Record Payment</a>
+                        </div>
+                    {% endif %}
+                    {% endwith %}
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-money-bill-wave fa-2x text-muted mb-3"></i>
+                        <p class="mb-0">No payment records found</p>
+                        <p class="small text-muted">Create a lease first to record payments</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

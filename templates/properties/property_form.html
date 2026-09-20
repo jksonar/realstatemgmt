@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if form.instance.pk %}Edit Property{% else %}Add Property{% endif %}{% endblock %}
+
+{% block page_title %}{% if form.instance.pk %}Edit Property{% else %}Add Property{% endif %}{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-body">
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            {% if form.errors %}
+                <div class="alert alert-danger">
+                    <ul>
+                        {% for field, errors in form.errors.items %}
+                            {% for error in errors %}
+                                <li>{{ field }}: {{ error }}</li>
+                            {% endfor %}
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+            {{ form.as_p }}
+            <button type="submit" class="btn btn-primary">{% if form.instance.pk %}Save Changes{% else %}Add Property{% endif %}</button>
+            <a href="{% if form.instance.pk %}{% url 'properties:property_detail' form.instance.pk %}{% else %}{% url 'properties:property_list' %}{% endif %}" class="btn btn-secondary">Cancel</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

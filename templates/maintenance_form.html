@@ -14,10 +14,10 @@
     <!-- Breadcrumb -->
     <nav aria-label="breadcrumb" class="mb-4">
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
-            <li class="breadcrumb-item"><a href="{% url 'maintenance_list' %}">Maintenance Requests</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'dashboard:dashboard' %}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'maintenance:maintenance_list' %}">Maintenance Requests</a></li>
             {% if maintenance_request.pk %}
-                <li class="breadcrumb-item"><a href="{% url 'maintenance_detail' maintenance_request.id %}">{{ maintenance_request.request_id }}</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'maintenance:maintenance_detail' maintenance_request.id %}">{{ maintenance_request.request_id }}</a></li>
                 <li class="breadcrumb-item active" aria-current="page">Edit</li>
             {% else %}
                 <li class="breadcrumb-item active" aria-current="page">Add New</li>
@@ -252,7 +252,7 @@
                                 <i class="fas fa-save me-2"></i>
                                 {% if maintenance_request.pk %}Update Request{% else %}Create Request{% endif %}
                             </button>
-                            <a href="{% if maintenance_request.pk %}{% url 'maintenance_detail' maintenance_request.id %}{% else %}{% url 'maintenance_list' %}{% endif %}" 
+                            <a href="{% if maintenance_request.pk %}{% url 'maintenance:maintenance_detail' maintenance_request.id %}{% else %}{% url 'maintenance:maintenance_list' %}{% endif %}" 
                                class="btn btn-secondary">
                                 <i class="fas fa-times me-2"></i>Cancel
                             </a>
@@ -399,8 +399,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // Auto-generate request ID if creating new request
-    {% if not maintenance_request.pk %}
-    if (!document.getElementById('request_id').value) {
+    if (!document.getElementById('request_id').value && {% if not maintenance_request.pk %}true{% else %}false{% endif %}) {
         const now = new Date();
         const requestId = 'MR' + now.getFullYear() + 
                          String(now.getMonth() + 1).padStart(2, '0') + 
@@ -409,7 +408,6 @@ document.addEventListener('DOMContentLoaded', function() {
                          String(now.getMinutes()).padStart(2, '0');
         document.getElementById('request_id').value = requestId;
     }
-    {% endif %}
 });
 </script>
 {% endblock %}

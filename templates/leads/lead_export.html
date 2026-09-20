@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+
+{% block title %}Export Leads{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Export Leads</h1>
+        <a href="{% url 'leads_frontend:lead-list' %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Leads
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Export Options</h6>
+                </div>
+                <div class="card-body">
+                    <form method="get" action="{% url 'leads_frontend:lead-export' %}">
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="status">Lead Status</label>
+                                <select class="form-control" id="status" name="status">
+                                    <option value="">All Statuses</option>
+                                    <option value="new">New</option>
+                                    <option value="contacted">Contacted</option>
+                                    <option value="qualified">Qualified</option>
+                                    <option value="proposal">Proposal</option>
+                                    <option value="negotiation">Negotiation</option>
+                                    <option value="converted">Converted</option>
+                                    <option value="lost">Lost</option>
+                                </select>
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label for="source">Lead Source</label>
+                                <select class="form-control" id="source" name="source">
+                                    <option value="">All Sources</option>
+                                    {% for source in sources %}
+                                    <option value="{{ source.id }}">{{ source.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="start_date">Start Date</label>
+                                <input type="date" class="form-control" id="start_date" name="start_date">
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label for="end_date">End Date</label>
+                                <input type="date" class="form-control" id="end_date" name="end_date">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="search">Search</label>
+                            <input type="text" class="form-control" id="search" name="search" placeholder="Search by name, email, or phone">
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-download"></i> Export to CSV
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Export Information</h6>
+                </div>
+                <div class="card-body">
+                    <p>The exported CSV file will include the following information for each lead:</p>
+                    <ul>
+                        <li>First Name</li>
+                        <li>Last Name</li>
+                        <li>Email</li>
+                        <li>Phone</li>
+                        <li>Status</li>
+                        <li>Source</li>
+                        <li>Inquiry Date</li>
+                        <li>Next Follow-up Date</li>
+                        <li>Last Contact Date</li>
+                        <li>Converted Date (if applicable)</li>
+                        <li>Notes</li>
+                    </ul>
+                    <p class="mb-0"><small>Note: This export will include all leads that match your filter criteria.</small></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

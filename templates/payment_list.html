@@ -8,7 +8,7 @@
 <nav class="flex px-5 py-3 text-gray-700 bg-gray-50 rounded-lg" aria-label="Breadcrumb">
     <ol class="inline-flex items-center space-x-1 md:space-x-3">
         <li class="inline-flex items-center">
-            <a href="{% url 'property_list' %}" class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-blue-600">
+            <a href="{% url 'properties:property_list' %}" class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-blue-600">
                 <svg class="w-3 h-3 mr-2.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
                     <path d="m19.707 9.293-2-2-7-7a1 1 0 0 0-1.414 0l-7 7-2 2a1 1 0 0 0 1.414 1.414L2 10.414V18a2 2 0 0 0 2 2h3a1 1 0 0 0 1-1v-4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v4a1 1 0 0 0 1 1h3a2 2 0 0 0 2-2v-7.586l.293.293a1 1 0 0 0 1.414-1.414Z"/>
                 </svg>
@@ -35,7 +35,7 @@
                 <p class="text-[#49739c] text-base font-normal leading-normal">Manage rent payments and financial transactions</p>
             </div>
             <div class="flex gap-3">
-                <a href="{% url 'payment_create' %}" class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#2884ef] text-white text-sm font-medium leading-normal hover:bg-[#1a6bd1] transition-colors">
+                <a href="{% url 'payments:payment_add' %}" class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#2884ef] text-white text-sm font-medium leading-normal hover:bg-[#1a6bd1] transition-colors">
                     <span class="truncate">Add Payment</span>
                 </a>
             </div>
@@ -144,13 +144,15 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                     <div class="flex items-center gap-2">
-                                        <a href="{% url 'payment_detail' payment.pk %}" class="text-[#2884ef] hover:text-[#1a6bd1] transition-colors">View</a>
+                                        <a href="{% url 'payments:payment_detail' payment.pk %}" class="text-[#2884ef] hover:text-[#1a6bd1] transition-colors">View</a>
                                         {% if payment.status != 'paid' %}
-                                            <a href="{% url 'payment_edit' payment.pk %}" class="text-[#49739c] hover:text-[#0d141c] transition-colors">Edit</a>
+                                            <a href="{% url 'payments:payment_edit' payment.pk %}" class="text-[#49739c] hover:text-[#0d141c] transition-colors">Edit</a>
                                         {% endif %}
+                                        {% comment %}
                                         {% if payment.status == 'paid' %}
                                             <a href="{% url 'payment_receipt' payment.pk %}" class="text-green-600 hover:text-green-800 transition-colors">Receipt</a>
                                         {% endif %}
+                                        {% endcomment %}
                                     </div>
                                 </td>
                             </tr>
@@ -163,7 +165,7 @@
                                         </svg>
                                         <h3 class="text-lg font-medium text-[#0d141c] mb-2">No payments found</h3>
                                         <p class="text-[#49739c] mb-4">Get started by adding your first payment record.</p>
-                                        <a href="{% url 'payment_create' %}" class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#2884ef] text-white text-sm font-medium leading-normal hover:bg-[#1a6bd1] transition-colors">
+                                        <a href="{% url 'payments:payment_add' %}" class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#2884ef] text-white text-sm font-medium leading-normal hover:bg-[#1a6bd1] transition-colors">
                                             Add Payment
                                         </a>
                                     </div>

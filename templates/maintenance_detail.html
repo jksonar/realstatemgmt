@@ -8,8 +8,8 @@
     <!-- Breadcrumb -->
     <nav aria-label="breadcrumb" class="mb-4">
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
-            <li class="breadcrumb-item"><a href="{% url 'maintenance_list' %}">Maintenance Requests</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'dashboard:dashboard' %}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'maintenance:maintenance_list' %}">Maintenance Requests</a></li>
             <li class="breadcrumb-item active" aria-current="page">{{ maintenance_request.request_id }}</li>
         </ol>
     </nav>
@@ -39,10 +39,10 @@
             </div>
         </div>
         <div class="d-flex gap-2">
-            <a href="{% url 'maintenance_edit' maintenance_request.id %}" class="btn btn-outline-primary">
+            <a href="{% url 'maintenance:maintenance_edit' maintenance_request.id %}" class="btn btn-outline-primary">
                 <i class="fas fa-edit me-2"></i>Edit Request
             </a>
-            <a href="{% url 'maintenance_list' %}" class="btn btn-secondary">
+            <a href="{% url 'maintenance:maintenance_list' %}" class="btn btn-secondary">
                 <i class="fas fa-arrow-left me-2"></i>Back to Requests
             </a>
         </div>

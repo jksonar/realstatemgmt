@@ -1,0 +1,331 @@
+{% extends 'base.html' %}
+{% load currency_filters %}
+
+{% block title %}Compare Properties{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="fw-bold mb-2">Compare Properties</h1>
+            <p class="text-muted">Compare selected properties side by side</p>
+        </div>
+        <div>
+            <div class="form-check form-switch d-inline-block me-3">
+                <input class="form-check-input" type="checkbox" id="highlightDifferences">
+                <label class="form-check-label" for="highlightDifferences">Highlight Differences</label>
+            </div>
+            <a href="{% url 'properties:property_list' %}" class="btn btn-secondary">
+                <i class="bi bi-arrow-left me-2"></i>Back to Properties
+            </a>
+        </div>
+    </div>
+
+    {% if properties %}
+        <!-- Property Images Section -->
+        <div class="card mb-4">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">Property Images</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    {% for property in properties %}
+                        <div class="col-md-4 mb-3">
+                            <div class="text-center">
+                                <h6 class="mb-3">{{ property.address }}</h6>
+                                {% if property.image %}
+                                    <img src="{{ property.image.url }}" alt="{{ property.address }}" class="img-fluid rounded" style="max-height: 200px; object-fit: cover;">
+                                {% else %}
+                                    <div class="bg-light rounded d-flex align-items-center justify-content-center" style="height: 200px;">
+                                        <i class="bi bi-house-door" style="font-size: 3rem;"></i>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Basic Information Section -->
+        <div class="card mb-4">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">Basic Information</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-striped mb-0">
+                        <thead>
+                            <tr>
+                                <th style="width: 20%">Feature</th>
+                                {% for property in properties %}
+                                    <th style="width: {{ 80|divisibleby:properties|floatformat:0 }}%">{{ property.address|truncatechars:30 }}</th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="fw-medium">Property ID</td>
+                                {% for property in properties %}
+                                    <td>{{ property.property_id }}</td>
+                                {% endfor %}
+                            </tr>
+                            <tr>
+                                <td class="fw-medium">City</td>
+                                {% for property in properties %}
+                                    <td>{{ property.city }}</td>
+                                {% endfor %}
+                            </tr>
+                            <tr>
+                                <td class="fw-medium">Area</td>
+                                {% for property in properties %}
+                                    <td>{{ property.area }}</td>
+                                {% endfor %}
+                            </tr>
+                            <tr>
+                                <td class="fw-medium">Property Type</td>
+                                {% for property in properties %}
+                                    <td>{{ property.property_type }}</td>
+                                {% endfor %}
+                            </tr>
+                            <tr>
+                                <td class="fw-medium">Size</td>
+                                {% for property in properties %}
+                                    <td>{{ property.size_sqft }} sqft</td>
+                                {% endfor %}
+                            </tr>
+                            <tr>
+                                <td class="fw-medium">Status</td>
+                                {% for property in properties %}
+                                    <td>
+                                        {% if property.status == 'available' %}
+                                            <span class="badge bg-success">Available</span>
+                                        {% elif property.status == 'occupied' %}
+                                            <span class="badge bg-warning">Occupied</span>
+                                        {% elif property.status == 'maintenance' %}
+                                            <span class="badge bg-danger">Maintenance</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">{{ property.status }}</span>
+                                        {% endif %}
+                                    </td>
+                                {% endfor %}
+                            </tr>
+                            <tr>
+                                <td class="fw-medium">Furnished Type</td>
+                                {% for property in properties %}
+                                    <td>{{ property.furnished_type }}</td>
+                                {% endfor %}
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Financial Information Section -->
+        <div class="card mb-4">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">Financial Information</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-striped mb-0">
+                        <thead>
+                            <tr>
+                                <th style="width: 20%">Feature</th>
+                                {% for property in properties %}
+                                    <th style="width: {{ 80|divisibleby:properties|floatformat:0 }}%">{{ property.address|truncatechars:30 }}</th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="fw-medium">Rent Amount</td>
+                                {% for property in properties %}
+                                    <td class="fw-bold">
+                                        {{ property.rent_amount }}
+                                        {% if properties|length > 1 %}
+                                            {% with min_rent=properties|dictsort:'rent_amount'|first %}
+                                                {% with max_rent=properties|dictsort:'rent_amount'|last %}
+                                                    {% if property.rent_amount == min_rent.rent_amount and properties|length > 1 %}
+                                                        <span class="badge bg-success ms-2" title="Best Value"><i class="bi bi-check-circle"></i></span>
+                                                    {% elif property.rent_amount == max_rent.rent_amount and properties|length > 1 %}
+                                                        <span class="badge bg-danger ms-2" title="Highest Price"><i class="bi bi-exclamation-circle"></i></span>
+                                                    {% endif %}
+                                                {% endwith %}
+                                            {% endwith %}
+                                        {% endif %}
+                                    </td>
+                                {% endfor %}
+                            </tr>
+                            <tr>
+                                <td class="fw-medium">Deposit Amount</td>
+                                {% for property in properties %}
+                                    <td>
+                                        {{ property.deposit_amount }}
+                                        {% if properties|length > 1 %}
+                                            {% with min_deposit=properties|dictsort:'deposit_amount'|first %}
+                                                {% with max_deposit=properties|dictsort:'deposit_amount'|last %}
+                                                    {% if property.deposit_amount == min_deposit.deposit_amount and properties|length > 1 %}
+                                                        <span class="badge bg-success ms-2" title="Lowest Deposit"><i class="bi bi-check-circle"></i></span>
+                                                    {% elif property.deposit_amount == max_deposit.deposit_amount and properties|length > 1 %}
+                                                        <span class="badge bg-danger ms-2" title="Highest Deposit"><i class="bi bi-exclamation-circle"></i></span>
+                                                    {% endif %}
+                                                {% endwith %}
+                                            {% endwith %}
+                                        {% endif %}
+                                    </td>
+                                {% endfor %}
+                            </tr>
+                            <tr>
+                                <td class="fw-medium">Rent per sqft</td>
+                                {% for property in properties %}
+                                    <td>
+                                        {% if property.size_sqft > 0 %}
+                                            {% with rent_per_sqft=property.rent_amount|floatformat:2|default:0|stringformat:"s"|add:"/"|add:property.size_sqft|stringformat:"s" %}
+                                                {{ rent_per_sqft }}
+                                                {% if properties|length > 1 %}
+                                                    {% with all_properties=properties %}
+                                                        {% with min_value=all_properties|dictsort:'rent_amount'|first %}
+                                                            {% with max_value=all_properties|dictsort:'rent_amount'|last %}
+                                                                {% if property.rent_amount == min_value.rent_amount and property.size_sqft >= min_value.size_sqft %}
+                                                                    <span class="badge bg-success ms-2" title="Best Value per sqft"><i class="bi bi-check-circle"></i></span>
+                                                                {% elif property.rent_amount == max_value.rent_amount and property.size_sqft <= max_value.size_sqft %}
+                                                                    <span class="badge bg-danger ms-2" title="Highest Price per sqft"><i class="bi bi-exclamation-circle"></i></span>
+                                                                {% endif %}
+                                                            {% endwith %}
+                                                        {% endwith %}
+                                                    {% endwith %}
+                                                {% endif %}
+                                            {% endwith %}
+                                        {% else %}
+                                            N/A
+                                        {% endif %}
+                                    </td>
+                                {% endfor %}
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Amenities Section -->
+        <div class="card mb-4">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">Amenities</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-striped mb-0">
+                        <thead>
+                            <tr>
+                                <th style="width: 20%">Property</th>
+                                <th style="width: 80%">Available Amenities</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for property in properties %}
+                                <tr>
+                                    <td class="fw-medium">{{ property.address|truncatechars:30 }}</td>
+                                    <td>
+                                        {% if property.amenities %}
+                                            <div class="d-flex flex-wrap gap-2">
+                                                {% for amenity in property.amenities %}
+                                                    <span class="badge bg-light text-dark">{{ amenity }}</span>
+                                                {% endfor %}
+                                            </div>
+                                        {% else %}
+                                            <span class="text-muted">No amenities listed</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Actions Section -->
+        <div class="d-flex justify-content-between">
+            <a href="{% url 'properties:property_list' %}" class="btn btn-secondary">
+                <i class="bi bi-arrow-left me-2"></i>Back to Properties
+            </a>
+            <div>
+                <button onclick="window.print()" class="btn btn-outline-primary me-2">
+                    <i class="bi bi-printer me-2"></i>Print Comparison
+                </button>
+                <a href="{% url 'properties:property_compare' %}?ids={{ request.GET.ids }}&export=excel" class="btn btn-outline-success">
+                    <i class="bi bi-file-earmark-excel me-2"></i>Export to Excel
+                </a>
+            </div>
+        </div>
+        
+        <script>
+            // Highlight differences functionality
+            document.getElementById('highlightDifferences').addEventListener('change', function() {
+                const tables = document.querySelectorAll('.table');
+                
+                tables.forEach(table => {
+                    const rows = table.querySelectorAll('tbody tr');
+                    
+                    rows.forEach(row => {
+                        const cells = row.querySelectorAll('td:not(:first-child)');
+                        let values = [];
+                        let allSame = true;
+                        
+                        // Get all values in this row (excluding the first cell which is the label)
+                        cells.forEach(cell => {
+                            values.push(cell.textContent.trim());
+                        });
+                        
+                        // Check if all values are the same
+                        for (let i = 1; i < values.length; i++) {
+                            if (values[i] !== values[0]) {
+                                allSame = false;
+                                break;
+                            }
+                        }
+                        
+                        // If not all values are the same and highlighting is enabled, highlight the cells
+                        if (!allSame && this.checked) {
+                            cells.forEach(cell => {
+                                cell.classList.add('bg-light-yellow');
+                            });
+                        } else {
+                            cells.forEach(cell => {
+                                cell.classList.remove('bg-light-yellow');
+                            });
+                        }
+                    });
+                });
+            });
+        </script>
+        
+        <style>
+            .bg-light-yellow {
+                background-color: rgba(255, 243, 205, 0.5) !important;
+            }
+            @media print {
+                .form-check, .btn {
+                    display: none !important;
+                }
+            }
+        </style>
+    {% else %}
+        <div class="card">
+            <div class="card-body text-center py-5">
+                <div class="text-muted mb-4">
+                    <i class="bi bi-bar-chart" style="font-size: 3rem;"></i>
+                </div>
+                <h4 class="fw-bold mb-3">No Properties Selected</h4>
+                <p class="text-muted mb-4">Please select at least two properties from the property list to compare them side by side.</p>
+                <a href="{% url 'properties:property_list' %}" class="btn btn-primary">
+                    <i class="bi bi-arrow-left me-2"></i>Go to Property List
+                </a>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

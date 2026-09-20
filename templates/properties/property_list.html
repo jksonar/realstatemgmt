@@ -1,0 +1,263 @@
+{% extends 'base.html' %}
+
+{% block title %}Properties{% endblock %}
+
+{% block page_title %}Property List{% endblock %}
+
+{% block content %}
+<div class="card shadow-sm">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">All Properties</h5>
+        <div>
+            <a href="{% url 'properties:property_csv_import_export' %}" class="btn btn-outline-secondary me-2"><i class="fas fa-file-csv me-1"></i> Import/Export</a>
+            <a href="{% url 'properties:property_add' %}" class="btn btn-primary"><i class="fas fa-plus me-1"></i> Add Property</a>
+        </div>
+    </div>
+    <div class="card-body">
+        <form method="get">
+            {{ filter.form.as_p }}
+            <div class="d-flex">
+                <button type="submit" class="btn btn-primary me-2">Search</button>
+                <a href="{% url 'properties:advanced_search' %}" class="btn btn-outline-primary">
+                    <i class="fas fa-filter me-1"></i> Advanced Search
+                </a>
+            </div>
+        </form>
+        <hr>
+        <form method="post" action="{% url 'properties:property_bulk_update' %}">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label for="id_status" class="form-label">Bulk Update Status</label>
+                <select name="status" id="id_status" class="form-select">
+                    <option value="" selected>Choose...</option>
+                    {% for value, display in filter.form.fields.status.choices %}
+                        <option value="{{ value }}">{{ display }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">Apply</button>
+            <a href="{% url 'properties:property_compare' %}" id="compare-link" class="btn btn-info">
+                <i class="fas fa-balance-scale me-1"></i> Compare <span id="compare-count" class="badge bg-light text-dark">0</span>
+            </a>
+        <hr>
+        <!-- Responsive toggle for table/card view -->
+        <div class="d-flex justify-content-end mb-3 d-md-none">
+            <div class="btn-group" role="group">
+                <button type="button" class="btn btn-sm btn-outline-secondary active" id="table-view-btn"><i class="bi bi-table"></i> Table</button>
+                <button type="button" class="btn btn-sm btn-outline-secondary" id="card-view-btn"><i class="bi bi-grid"></i> Cards</button>
+            </div>
+        </div>
+        
+        <!-- Table view (default) -->
+        <div class="table-view">
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th><input type="checkbox" id="select-all"></th>
+                            <th>
+                                <div class="d-flex align-items-center">
+                                    <span class="me-2">Compare</span>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="select-all-compare">
+                                    </div>
+                                </div>
+                            </th>
+                            <th>ID</th>
+                            <th>Address</th>
+                            <th>City</th>
+                            <th>Type</th>
+                            <th>Rent</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for property in properties %}
+                <tr>
+                    <td><input type="checkbox" name="properties" value="{{ property.pk }}" class="property-checkbox"></td>
+                    <td>
+                        <div class="form-check">
+                            <input type="checkbox" name="compare" value="{{ property.pk }}" class="form-check-input compare-checkbox">
+                        </div>
+                    </td>
+                    <td>{{ property.property_id }}</td>
+                    <td>{{ property.address }}</td>
+                    <td>{{ property.city }}</td>
+                    <td>{{ property.property_type }}</td>
+                    <td>{{ property.rent_amount }}</td>
+                    <td>
+                        {% if property.status == 'available' %}
+                            <span class="badge bg-success">Available</span>
+                        {% elif property.status == 'occupied' %}
+                            <span class="badge bg-warning">Occupied</span>
+                        {% elif property.status == 'maintenance' %}
+                            <span class="badge bg-danger">Maintenance</span>
+                        {% else %}
+                            <span class="badge bg-secondary">{{ property.status }}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{% url 'properties:property_detail' property.pk %}" class="btn btn-sm btn-info">View</a>
+                        <a href="{% url 'properties:property_edit' property.pk %}" class="btn btn-sm btn-warning">Edit</a>
+                    </td>
+                </tr>
+                {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Card view (mobile-friendly alternative) -->
+        <div class="mobile-card-view d-none">
+            {% for property in properties %}
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h5 class="card-title mb-0">{{ property.property_id }}</h5>
+                        <div>
+                            <div class="form-check form-check-inline">
+                                <input type="checkbox" name="properties" value="{{ property.pk }}" class="form-check-input property-checkbox">
+                                <label class="form-check-label small">Select</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input type="checkbox" name="compare" value="{{ property.pk }}" class="form-check-input compare-checkbox">
+                                <label class="form-check-label small">Compare</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-2">
+                        <span class="property-card-label">Address:</span> {{ property.address }}
+                    </div>
+                    <div class="mb-2">
+                        <span class="property-card-label">City:</span> {{ property.city }}
+                    </div>
+                    <div class="mb-2">
+                        <span class="property-card-label">Type:</span> {{ property.property_type }}
+                    </div>
+                    <div class="mb-2">
+                        <span class="property-card-label">Rent:</span> {{ property.rent_amount }}
+                    </div>
+                    <div class="mb-3">
+                        <span class="property-card-label">Status:</span> {{ property.status }}
+                    </div>
+                    <div class="d-flex gap-2">
+                        <a href="{% url 'properties:property_detail' property.pk %}" class="btn btn-sm btn-info">View</a>
+                        <a href="{% url 'properties:property_edit' property.pk %}" class="btn btn-sm btn-warning">Edit</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        </form>
+
+        <script>
+            // Select all checkbox functionality
+            document.getElementById('select-all').onclick = function() {
+                var checkboxes = document.querySelectorAll('.property-checkbox');
+                for (var checkbox of checkboxes) {
+                    checkbox.checked = this.checked;
+                }
+            }
+            
+            // Select all compare checkbox functionality
+            document.getElementById('select-all-compare').onclick = function() {
+                var checkboxes = document.querySelectorAll('.compare-checkbox');
+                for (var checkbox of checkboxes) {
+                    checkbox.checked = this.checked;
+                }
+                updateCompareCount();
+            }
+
+            // Compare functionality
+            const compareLink = document.getElementById('compare-link');
+            const compareCount = document.getElementById('compare-count');
+            const compareCheckboxes = document.querySelectorAll('.compare-checkbox');
+            
+            function updateCompareCount() {
+                const selected = document.querySelectorAll('.compare-checkbox:checked');
+                const ids = Array.from(selected).map(cb => cb.value);
+                compareCount.textContent = ids.length;
+                
+                if (ids.length > 0) {
+                    compareLink.href = `{% url 'properties:property_compare' %}?ids=${ids.join(',')}`;
+                    compareLink.classList.remove('disabled');
+                } else {
+                    compareLink.href = `{% url 'properties:property_compare' %}`;
+                    compareLink.classList.add('disabled');
+                }
+                
+                // Disable compare button if less than 2 properties selected
+                if (ids.length < 2) {
+                    compareLink.classList.add('disabled');
+                    compareLink.title = 'Select at least 2 properties to compare';
+                } else {
+                    compareLink.classList.remove('disabled');
+                    compareLink.title = '';
+                }
+            }
+
+            compareCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', updateCompareCount);
+            });
+            
+            // Initialize compare count
+            updateCompareCount();
+            
+            // Mobile view toggle functionality
+            const tableViewBtn = document.getElementById('table-view-btn');
+            const cardViewBtn = document.getElementById('card-view-btn');
+            const tableView = document.querySelector('.table-view');
+            const cardView = document.querySelector('.mobile-card-view');
+            
+            if (tableViewBtn && cardViewBtn) {
+                tableViewBtn.addEventListener('click', function() {
+                    tableView.classList.remove('d-none');
+                    cardView.classList.add('d-none');
+                    tableViewBtn.classList.add('active');
+                    cardViewBtn.classList.remove('active');
+                });
+                
+                cardViewBtn.addEventListener('click', function() {
+                    cardView.classList.remove('d-none');
+                    tableView.classList.add('d-none');
+                    cardViewBtn.classList.add('active');
+                    tableViewBtn.classList.remove('active');
+                });
+                
+                // Auto-switch to card view on very small screens
+                if (window.innerWidth < 576) {
+                    cardViewBtn.click();
+                }
+            }
+        </script>
+
+
+        {% if is_paginated %}
+            <nav aria-label="Page navigation">
+                <ul class="pagination">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a></li>
+                    {% else %}
+                        <li class="page-item disabled"><a class="page-link" href="#">Previous</a></li>
+                    {% endif %}
+
+                    {% for i in paginator.page_range %}
+                        {% if page_obj.number == i %}
+                            <li class="page-item active" aria-current="page"><a class="page-link" href="#">{{ i }}</a></li>
+                        {% else %}
+                            <li class="page-item"><a class="page-link" href="?page={{ i }}">{{ i }}</a></li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if page_obj.has_next %}
+                        <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a></li>
+                    {% else %}
+                        <li class="page-item disabled"><a class="page-link" href="#">Next</a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
